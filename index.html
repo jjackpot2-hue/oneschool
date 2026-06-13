@@ -2,7 +2,7 @@
 <html lang="ko" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>온스쿨 (OnSchool) - 실시간 급식 & 시간표</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,14 +21,14 @@
         }
     </style>
 </head>
-<body class="h-full text-slate-800 flex flex-col antialiased bg-slate-100/50">
+<body class="min-h-screen text-slate-800 flex flex-col antialiased bg-slate-100/50 overflow-hidden">
 
-    <!-- App Container -->
-    <div class="flex-1 flex flex-col max-w-md mx-auto w-full bg-white shadow-xl relative overflow-hidden h-full">
+    <!-- App Container (dvh 단위를 적용해 아이폰 사파리 하단바 가림 현상 완벽 방어) -->
+    <div class="flex-1 flex flex-col max-w-md mx-auto w-full bg-white shadow-xl relative overflow-hidden min-h-[100dvh] h-[100dvh]">
         
-        <!-- ==================== 1단계: 학교 등록 화면 ==================== -->
-        <div id="setup-view" class="flex-1 flex flex-col justify-center p-6 bg-white">
-            <div class="text-center mb-8">
+        <!-- ==================== 1단계: 학교 등록 화면 (키보드 대응 및 가로폭 고정 완료) ==================== -->
+        <div id="setup-view" class="flex-1 flex flex-col justify-start p-6 bg-white overflow-y-auto custom-scrollbar pt-12 pb-8">
+            <div class="text-center mb-8 shrink-0">
                 <div class="inline-flex items-center justify-center w-18 h-16 rounded-3xl bg-blue-800 text-white shadow-lg shadow-blue-100 mb-4">
                     <i class="fa-solid fa-graduation-cap text-3xl"></i>
                 </div>
@@ -38,13 +38,15 @@
                 <p class="text-slate-400 text-xs mt-2.5 font-normal tracking-wide">made by pass ssam × Gemini</p>
             </div>
 
-            <!-- 검색 입력창 -->
-            <div class="bg-slate-50 border border-slate-150 rounded-3xl p-5 shadow-sm space-y-3">
+            <!-- 검색 입력창 (flex 내 min-w-0과 shrink-0을 결합하여 가로 뚫기 버그 완전 방어) -->
+            <div class="bg-slate-50 border border-slate-150 rounded-3xl p-5 shadow-sm space-y-3 shrink-0">
                 <label class="block text-slate-700 font-bold text-base">🏫 내 학교 검색</label>
-                <div class="flex gap-2">
+                <div class="flex gap-2 w-full overflow-hidden">
+                    <!-- min-w-0 w-full 및 text-base 설정으로 아이폰 사파리 전용 가로 고정 및 자동 줌 방지 -->
                     <input type="text" id="search-input" placeholder="학교 이름을 입력하세요 (예: 문평중)" 
-                        class="flex-1 bg-white border border-slate-200 rounded-2xl px-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-650 font-medium">
-                    <button onclick="searchSchool()" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-5 py-3.5 rounded-2xl text-base transition-all shadow-md shadow-blue-100">
+                        class="flex-1 min-w-0 w-full bg-white border border-slate-200 rounded-2xl px-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-650 font-medium text-slate-800">
+                    <!-- shrink-0 설정으로 어떤 해상도에서도 버튼 크기 완전 고정 -->
+                    <button onclick="searchSchool()" class="shrink-0 bg-blue-700 hover:bg-blue-800 text-white font-bold px-5 py-3.5 rounded-2xl text-base transition-all shadow-md shadow-blue-100">
                         검색
                     </button>
                 </div>
@@ -165,7 +167,7 @@
                         </div>
                     </div>
 
-                    <!-- 메인 화면 최하단 서명 수정: "made by pass ssam × Gemini" -->
+                    <!-- 메인 화면 최하단 서명: "made by pass ssam × Gemini" -->
                     <div class="text-center pt-2 pb-1">
                         <span class="text-[11px] text-slate-300 font-normal tracking-wider select-none">made by pass ssam × Gemini</span>
                     </div>
