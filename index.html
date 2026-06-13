@@ -21,7 +21,7 @@
         }
     </style>
 </head>
-<body class="h-full text-slate-800 flex flex-col antialiased bg-slate-100">
+<body class="h-full text-slate-800 flex flex-col antialiased bg-slate-100/50">
 
     <!-- App Container -->
     <div class="flex-1 flex flex-col max-w-md mx-auto w-full bg-white shadow-xl relative overflow-hidden h-full">
@@ -29,20 +29,20 @@
         <!-- ==================== 1단계: 학교 등록 화면 ==================== -->
         <div id="setup-view" class="flex-1 flex flex-col justify-center p-6 bg-white">
             <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-blue-600 text-white shadow-lg shadow-blue-100 mb-4">
+                <div class="inline-flex items-center justify-center w-18 h-16 rounded-3xl bg-blue-800 text-white shadow-lg shadow-blue-100 mb-4">
                     <i class="fa-solid fa-graduation-cap text-3xl"></i>
                 </div>
-                <h1 class="text-2xl font-black text-slate-900 tracking-tight">온스쿨 <span class="text-blue-600">OnSchool</span></h1>
-                <p class="text-slate-500 text-sm mt-1">우리 학교 급식과 시간표를 실시간으로!</p>
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight">온스쿨 <span class="text-blue-700">OnSchool</span></h1>
+                <p class="text-slate-500 text-base mt-2 font-medium">우리 학교 급식과 시간표를 실시간으로!</p>
             </div>
 
             <!-- 검색 입력창 -->
-            <div class="bg-slate-50 border border-slate-100 rounded-3xl p-5 shadow-sm space-y-3">
-                <label class="block text-slate-700 font-bold text-sm">🏫 내 학교 검색</label>
+            <div class="bg-slate-50 border border-slate-150 rounded-3xl p-5 shadow-sm space-y-3">
+                <label class="block text-slate-700 font-bold text-base">🏫 내 학교 검색</label>
                 <div class="flex gap-2">
                     <input type="text" id="search-input" placeholder="학교 이름을 입력하세요 (예: 문평중)" 
-                        class="flex-1 bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
-                    <button onclick="searchSchool()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-3 rounded-2xl text-sm transition-all shadow-md shadow-blue-100">
+                        class="flex-1 bg-white border border-slate-200 rounded-2xl px-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-650 font-medium">
+                    <button onclick="searchSchool()" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-5 py-3.5 rounded-2xl text-base transition-all shadow-md shadow-blue-100">
                         검색
                     </button>
                 </div>
@@ -54,33 +54,33 @@
         </div>
 
         <!-- ==================== 2단계: 메인 급식/시간표 대시보드 ==================== -->
-        <div id="main-view" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-50 animate-fade-in">
+        <div id="main-view" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-50/55 animate-fade-in">
             <!-- 상단 헤더 -->
             <header class="bg-white border-b border-slate-100 px-5 py-4 flex items-center justify-between shrink-0 shadow-sm">
                 <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
-                        <i class="fa-solid fa-school text-xl"></i>
+                    <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-700">
+                        <i class="fa-solid fa-school text-2xl"></i>
                     </div>
                     <div>
-                        <h2 id="school-name-display" class="font-black text-slate-900 text-lg leading-none">학교 이름</h2>
-                        <span class="text-[10px] text-slate-400 mt-1 inline-block">실시간 교육부 NEIS 연동</span>
+                        <h2 id="school-name-display" class="font-bold text-slate-900 text-2xl leading-none">학교 이름</h2>
+                        <span class="text-[11px] text-blue-700 mt-1.5 inline-block font-semibold bg-blue-50 px-2 py-0.5 rounded">실시간 교육부 NEIS 연동</span>
                     </div>
                 </div>
-                <button onclick="resetSchool()" class="text-xs font-bold text-slate-500 hover:text-blue-600 border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 hover:bg-blue-50 transition-all">
+                <button onclick="resetSchool()" class="text-xs font-bold text-slate-500 hover:text-blue-700 border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 hover:bg-blue-50/50 transition-all">
                     학교 변경
                 </button>
             </header>
 
             <!-- 날짜 선택 네비게이터 -->
             <div class="bg-white px-5 py-3.5 border-b border-slate-100 flex items-center justify-between shrink-0">
-                <button onclick="changeDate(-1)" class="w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center text-blue-600 text-base font-bold transition-all">
+                <button onclick="changeDate(-1)" class="w-11 h-11 rounded-xl hover:bg-blue-50 flex items-center justify-center text-blue-700 text-lg font-bold transition-all">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
                 <div class="flex items-center gap-2">
                     <input type="date" id="target-date" onchange="onDateChanged()" 
-                        class="border-0 bg-transparent font-black text-slate-800 text-base focus:outline-none focus:ring-0 text-center cursor-pointer">
+                        class="border-0 bg-transparent font-bold text-slate-800 text-lg focus:outline-none focus:ring-0 text-center cursor-pointer">
                 </div>
-                <button onclick="changeDate(1)" class="w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center text-blue-600 text-base font-bold transition-all">
+                <button onclick="changeDate(1)" class="w-11 h-11 rounded-xl hover:bg-blue-50 flex items-center justify-center text-blue-700 text-lg font-bold transition-all">
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
             </div>
@@ -89,55 +89,55 @@
             <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar pb-12">
                 
                 <!-- 주말 메시지 -->
-                <div id="weekend-view" class="hidden bg-blue-50 border border-blue-100 rounded-3xl p-8 text-center">
+                <div id="weekend-view" class="hidden bg-blue-50/50 border border-blue-100 rounded-3xl p-8 text-center">
                     <span class="text-4xl block mb-2">🥳</span>
-                    <h3 class="font-black text-blue-900 text-base">오늘은 신나는 주말입니다!</h3>
-                    <p class="text-xs text-blue-600 mt-1">평일 날짜를 선택하시면 급식과 시간표가 나옵니다.</p>
+                    <h3 class="font-bold text-blue-900 text-lg">오늘은 신나는 주말입니다!</h3>
+                    <p class="text-sm text-blue-700 mt-1.5 font-medium">평일 날짜를 선택하시면 급식과 시간표가 나옵니다.</p>
                 </div>
 
                 <div id="weekday-content" class="space-y-4">
-                    <!-- 오늘의 점심 급식 카드 (글씨 굵기 부드럽게 조정) -->
+                    <!-- 오늘의 점심 급식 카드 -->
                     <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
-                        <div class="flex items-center justify-between mb-3">
-                            <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
-                                <i class="fa-solid fa-bowl-rice text-amber-500"></i> 오늘의 점심 급식
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                                <i class="fa-solid fa-bowl-rice text-amber-500 text-xl"></i> 오늘의 점심 급식
                             </h3>
-                            <button onclick="toggleAllergyNumbers()" id="allergy-toggle-btn" class="text-[11px] font-bold text-slate-400 border border-slate-200 rounded-lg px-2 py-1">
+                            <button onclick="toggleAllergyNumbers()" id="allergy-toggle-btn" class="text-xs font-bold text-slate-400 border border-slate-200 rounded-lg px-2.5 py-1.5 hover:bg-blue-50/30 transition-all">
                                 알레르기 표시
                             </button>
                         </div>
                         
-                        <div id="meal-content-box" class="bg-amber-50/40 border border-amber-100/60 rounded-2xl p-4 flex items-center justify-center">
+                        <div id="meal-content-box" class="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex items-center justify-center">
                         </div>
                     </div>
 
-                    <!-- 학년 통합 가로 정렬 대형 시간표 카드 (테이블 내용 글씨 굵기 부드럽게 조정) -->
+                    <!-- 학년 통합 가로 정렬 대형 시간표 카드 -->
                     <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
-                        <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-2.5">
+                        <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
                             <div>
-                                <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
-                                    <i class="fa-solid fa-calendar-day text-blue-500"></i> 학년통합 오늘 시간표
+                                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                                    <i class="fa-solid fa-calendar-day text-blue-700 text-xl"></i> 학년통합 오늘 시간표
                                 </h3>
-                                <p class="text-[10px] text-slate-400 mt-0.5">매 학년 1반 기준으로 교시별 과목을 나란히 비교합니다.</p>
+                                <p class="text-xs text-slate-400 mt-1 font-medium">매 학년 1반 기준으로 교시별 과목을 나란히 비교합니다.</p>
                             </div>
-                            <span class="text-[10px] bg-blue-50 text-blue-600 font-black px-2 py-0.5 rounded-md">1반 기준</span>
+                            <span class="text-xs bg-blue-50 text-blue-700 font-bold px-2.5 py-1 rounded-lg">1반 기준</span>
                         </div>
 
                         <!-- 통합 테이블 구조 -->
-                        <div class="overflow-hidden rounded-2xl border border-slate-100">
+                        <div class="overflow-hidden rounded-2xl border border-slate-150">
                             <table class="w-full text-left border-collapse table-fixed">
                                 <thead>
-                                    <tr class="bg-slate-50/80 border-b border-slate-100">
-                                        <th class="py-3 text-center text-[11px] font-black text-slate-400 w-[55px]">교시</th>
-                                        <th class="py-3 px-1 text-center text-sm font-bold text-blue-600">1학년</th>
-                                        <th class="py-3 px-1 text-center text-sm font-bold text-blue-600">2학년</th>
-                                        <th class="py-3 px-1 text-center text-sm font-bold text-blue-600">3학년</th>
+                                    <tr class="bg-slate-50/80 border-b border-slate-150">
+                                        <th class="py-3 text-center text-xs font-bold text-slate-400 w-[55px]">교시</th>
+                                        <th class="py-3 px-1 text-center text-[15px] font-bold text-blue-800">1학년</th>
+                                        <th class="py-3 px-1 text-center text-[15px] font-bold text-blue-800">2학년</th>
+                                        <th class="py-3 px-1 text-center text-[15px] font-bold text-blue-800">3학년</th>
                                     </tr>
                                 </thead>
-                                <tbody id="unified-timetable-rows" class="divide-y divide-slate-100/70">
+                                <tbody id="unified-timetable-rows" class="divide-y divide-slate-100">
                                     <tr>
                                         <td colspan="4" class="text-center py-10 text-xs text-slate-300">
-                                            <i class="fa-solid fa-spinner animate-spin text-lg block mb-2 text-blue-500"></i>
+                                            <i class="fa-solid fa-spinner animate-spin text-lg block mb-2 text-blue-700"></i>
                                             시간표 데이터 로드 중...
                                         </td>
                                     </tr>
@@ -193,7 +193,7 @@
             }
 
             const resultsDiv = document.getElementById('search-results');
-            resultsDiv.innerHTML = '<div class="text-center py-4 text-xs text-slate-400"><i class="fa-solid fa-spinner animate-spin"></i> 학교를 검색하는 중...</div>';
+            resultsDiv.innerHTML = '<div class="text-center py-4 text-xs text-slate-400"><i class="fa-solid fa-spinner animate-spin bg-blue-50 text-blue-700"></i> 학교를 검색하는 중...</div>';
 
             fetch(`${API_BASE_URL}/schoolInfo?Type=json&pIndex=1&pSize=10&SCHUL_NM=${encodeURIComponent(query)}`)
                 .then(res => res.json())
@@ -206,13 +206,13 @@
                     
                     data.schoolInfo[1].row.forEach(school => {
                         const btn = document.createElement('button');
-                        btn.className = 'w-full text-left p-3.5 bg-white border border-slate-200 hover:border-blue-500 rounded-2xl text-xs font-bold transition-all flex justify-between items-center hover:bg-blue-50/30';
+                        btn.className = 'w-full text-left p-3.5 bg-white border border-slate-200 hover:border-blue-700 rounded-2xl text-xs font-bold transition-all flex justify-between items-center hover:bg-blue-50/30';
                         btn.innerHTML = `
                             <div>
                                 <span class="text-slate-800 text-sm block">${school.SCHUL_NM}</span>
                                 <span class="text-slate-400 text-[10px] font-normal mt-0.5 inline-block">${school.LCTN_SC_NM}</span>
                             </div>
-                            <span class="bg-blue-50 text-blue-600 text-[10px] px-2 py-1 rounded-lg font-black">선택</span>
+                            <span class="bg-blue-50 text-blue-700 text-[10px] px-2 py-1 rounded-lg font-black">선택</span>
                         `;
                         btn.onclick = () => saveSchool(school.ATPT_OFCDC_SC_CODE, school.SD_SCHUL_CODE, school.SCHUL_NM);
                         resultsDiv.appendChild(btn);
@@ -247,7 +247,7 @@
             showAllergies = !showAllergies;
             const btn = document.getElementById('allergy-toggle-btn');
             if (showAllergies) {
-                btn.className = "text-[11px] font-bold text-blue-600 border border-blue-200 bg-blue-50 rounded-lg px-2 py-1";
+                btn.className = "text-[11px] font-bold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg px-2 py-1";
             } else {
                 btn.className = "text-[11px] font-bold text-slate-400 border border-slate-200 bg-transparent rounded-lg px-2 py-1";
             }
@@ -276,7 +276,7 @@
             const dd = String(currentSelectedDate.getDate()).padStart(2, '0');
             const dateStr = `${yyyy}${mm}${dd}`;
 
-            // --- 1. 급식 연동 (글씨 굵기를 font-medium으로 부드럽게 조정) ---
+            // --- 1. 급식 연동 (부드러운 미디엄 서체) ---
             const mealContentBox = document.getElementById('meal-content-box');
             mealContentBox.innerHTML = '<div class="text-center py-4 text-xs text-slate-400"><i class="fa-solid fa-spinner animate-spin"></i> 오늘 맛있는 밥을 준비하고 있어요...</div>';
 
@@ -295,17 +295,15 @@
                             
                             if (cleanName) {
                                 if (showAllergies && allergyMatch) {
-                                    // font-extrabold를 font-medium으로 변경하여 진하지 않게 표현
-                                    cleanList.push(`<span class="font-medium text-slate-700 text-[15px]">${cleanName}</span><span class="text-[10px] text-amber-500 font-bold ml-0.5">${allergyMatch[0]}</span>`);
+                                    cleanList.push(`<span class="font-medium text-slate-700 text-[15px]">${cleanName}</span><span class="text-[10px] text-blue-600 font-bold ml-0.5">${allergyMatch[0]}</span>`);
                                 } else {
-                                    // font-extrabold를 font-medium으로 변경하여 진하지 않게 표현
                                     cleanList.push(`<span class="font-medium text-slate-700 text-[15px]">${cleanName}</span>`);
                                 }
                             }
                         });
 
                         mealContentBox.innerHTML = `
-                            <div class="text-[15px] text-center leading-relaxed text-slate-600 font-medium py-2 flex flex-wrap justify-center gap-y-1.5">
+                            <div class="text-[15px] text-center leading-relaxed text-slate-650 font-medium py-2 flex flex-wrap justify-center gap-y-1.5">
                                 ${cleanList.join('<span class="text-slate-300 mx-2 font-normal">|</span>')}
                             </div>
                         `;
@@ -317,7 +315,7 @@
                     mealContentBox.innerHTML = '<div class="text-center text-sm text-rose-500 font-medium py-4">❌ 급식 정보 로드 실패</div>';
                 });
 
-            // --- 2. 학년통합 가로 격자 시간표 연동 (과목명을 font-medium으로 부드럽게 조정) ---
+            // --- 2. 학년통합 가로 격자 시간표 연동 ---
             let schType = "misTimetable"; 
             let isElementary = false;
             if (schoolInfo.schoolName.includes("초등학교")) {
@@ -387,11 +385,10 @@
                     const g2 = matrix[2][p] || '<span class="text-slate-300 font-normal">-</span>';
                     const g3 = matrix[3][p] || '<span class="text-slate-300 font-normal">-</span>';
 
-                    // font-black을 font-medium으로 변경하여 얇고 부드럽게 출력
                     rowsHtml += `
-                        <tr class="hover:bg-slate-50/50 transition-all">
+                        <tr class="hover:bg-blue-50/30 transition-all">
                             <td class="py-4 text-center shrink-0">
-                                <span class="inline-block bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow-sm">${p}교시</span>
+                                <span class="inline-block bg-blue-700 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow-sm">${p}교시</span>
                             </td>
                             <td class="py-4 px-1 text-center text-[15px] font-medium text-slate-700 truncate max-w-[95px]" title="${matrix[1][p] || ''}">${g1}</td>
                             <td class="py-4 px-1 text-center text-[15px] font-medium text-slate-700 truncate max-w-[95px]" title="${matrix[2][p] || ''}">${g2}</td>
