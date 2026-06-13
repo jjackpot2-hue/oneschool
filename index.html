@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -76,20 +76,20 @@
                 </button>
             </header>
 
-            <!-- 날짜 선택 네비게이터 (어떠한 브라우저 보안 장벽도 100% 무력화하는 오버랩 하이브리드 설계) -->
+            <!-- 날짜 선택 네비게이터 (시원하게 크기를 넓힌 글씨 최적화 반영) -->
             <div class="bg-white px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0 shadow-sm sticky top-[73px] z-30">
                 <button onclick="changeDate(-1)" class="w-11 h-11 rounded-2xl hover:bg-slate-50 active:scale-90 flex items-center justify-center text-blue-700 text-lg font-bold transition-all border border-slate-100">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
                 
-                <!-- 하이브리드 달력 영역 -->
+                <!-- 하이브리드 달력 영역 (날짜 글씨 크기를 text-[17px]로 키우고 터치 영역도 넉넉하게 확장) -->
                 <div class="relative flex items-center justify-center cursor-pointer">
-                    <!-- 1. 눈에 보이는 깔끔한 디자인 버튼 (가상 레이어: pointer-events-none을 걸어 터치를 뒤로 넘겨줌) -->
-                    <div class="font-bold text-slate-800 text-[15px] flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm pointer-events-none select-none">
-                        <i class="fa-solid fa-calendar-days text-blue-700 text-sm"></i>
+                    <!-- 1. 눈에 보이는 디자인 버튼 (가상 레이어: text-[17px]로 시원하게 확대 완료) -->
+                    <div class="font-bold text-slate-800 text-[17px] flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm pointer-events-none select-none">
+                        <i class="fa-solid fa-calendar-days text-blue-700 text-base"></i>
                         <span id="date-display-text">오늘 날짜 로딩 중...</span>
                     </div>
-                    <!-- 2. 실제 버튼 바로 위 전체를 투명하게 완전히 덮고 있는 원본 Date Input (클릭 즉시 브라우저가 직접 달력을 염) -->
+                    <!-- 2. 실제 버튼 바로 위 전체를 투명하게 완전히 덮고 있는 원본 Date Input -->
                     <input type="date" id="target-date" onchange="onDateChanged()" 
                         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                 </div>
@@ -120,7 +120,7 @@
                         </div>
                     </div>
 
-                    <!-- 오늘의 점심 급식 카드 -->
+                    <!-- 오늘의 점심 급식 카드 (급식명 글꼴 가독성 향상) -->
                     <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
@@ -134,7 +134,7 @@
                         </div>
                     </div>
 
-                    <!-- 학년 통합 가로 정렬 대형 시간표 카드 -->
+                    <!-- 학년 통합 가로 정렬 대형 시간표 카드 (과목 폰트 16px 및 헤더 굵기 조정 완료) -->
                     <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
                         <div class="mb-4 border-b border-slate-100 pb-3">
                             <h3 class="font-bold text-slate-800 text-lg flex items-center gap-1.5">
@@ -148,9 +148,9 @@
                                 <thead>
                                     <tr class="bg-slate-50/80 border-b border-slate-150">
                                         <th class="py-3 text-center text-xs font-bold text-slate-400 w-[55px]">교시</th>
-                                        <th class="py-3 px-1 text-center text-[15px] font-bold text-blue-800">1학년</th>
-                                        <th class="py-3 px-1 text-center text-[15px] font-bold text-blue-800">2학년</th>
-                                        <th class="py-3 px-1 text-center text-[15px] font-bold text-blue-800">3학년</th>
+                                        <th class="py-3 px-1 text-center text-[16px] font-extrabold text-blue-800">1학년</th>
+                                        <th class="py-3 px-1 text-center text-[16px] font-extrabold text-blue-800">2학년</th>
+                                        <th class="py-3 px-1 text-center text-[16px] font-extrabold text-blue-800">3학년</th>
                                     </tr>
                                 </thead>
                                 <tbody id="unified-timetable-rows" class="divide-y divide-slate-100">
@@ -498,16 +498,16 @@
                             
                             if (cleanName) {
                                 if (showAllergies && allergyMatch) {
-                                    cleanList.push(`<span class="font-medium text-slate-700 text-[15px]">${cleanName}</span><span class="text-[10px] text-blue-600 font-bold ml-0.5">${allergyMatch[0]}</span>`);
+                                    cleanList.push(`<span class="font-bold text-slate-800 text-[16px]">${cleanName}</span><span class="text-[10px] text-blue-600 font-bold ml-1">${allergyMatch[0]}</span>`);
                                 } else {
-                                    cleanList.push(`<span class="font-medium text-slate-700 text-[15px]">${cleanName}</span>`);
+                                    cleanList.push(`<span class="font-bold text-slate-800 text-[16px]">${cleanName}</span>`);
                                 }
                             }
                         });
 
                         mealContentBox.innerHTML = `
-                            <div class="text-[15px] text-center leading-relaxed text-slate-650 font-medium py-2 flex flex-wrap justify-center gap-y-1.5">
-                                ${cleanList.join('<span class="text-slate-300 mx-2 font-normal">|</span>')}
+                            <div class="text-[16px] text-center leading-relaxed text-slate-800 font-bold py-2 flex flex-wrap justify-center gap-y-1.5">
+                                ${cleanList.join('<span class="text-slate-350 mx-2 font-normal">|</span>')}
                             </div>
                         `;
                     } else {
@@ -607,14 +607,14 @@
                             
                             if (teacher) {
                                 return `
-                                    <div onclick="showTeacherTooltip('${subj}')" class="relative inline-flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-transform w-full">
-                                        <div class="relative inline-block font-medium text-slate-700 text-[15px] leading-tight">${subj}</div>
-                                        <span class="text-[11px] text-blue-600 font-bold leading-none mt-1">${teacher} 쌤</span>
+                                    <div onclick="showTeacherTooltip('${subj}')" class="relative inline-flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-transform w-full py-1">
+                                        <div class="relative inline-block font-bold text-slate-800 text-[16px] leading-tight">${subj}</div>
+                                        <span class="text-[12px] text-blue-600 font-extrabold leading-none mt-1.5">${teacher} 쌤</span>
                                     </div>
                                 `;
                             }
                             return `
-                                <div onclick="showTeacherTooltip('${subj}')" class="cursor-pointer active:scale-95 transition-transform w-full text-[15px] text-slate-700 font-medium">${subj}</div>
+                                <div onclick="showTeacherTooltip('${subj}')" class="cursor-pointer active:scale-95 transition-transform w-full py-1 text-[16px] text-slate-800 font-bold">${subj}</div>
                             `;
                         };
 
@@ -678,7 +678,7 @@
                                     <div class="flex items-center justify-between py-0.5 border-b border-emerald-100/30 last:border-b-0">
                                         <div class="flex items-center gap-2">
                                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-                                            <span class="text-[14px] font-bold text-emerald-950">${item.name}</span>
+                                            <span class="text-[15px] font-bold text-emerald-950">${item.name}</span>
                                             ${gradeBadge}
                                         </div>
                                     </div>
