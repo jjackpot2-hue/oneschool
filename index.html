@@ -74,22 +74,26 @@
                 </button>
             </header>
 
-            <!-- 날짜 선택 네비게이터 (가독성을 극대화한 세련된 달력 선택 버튼 디자인 적용) -->
+            <!-- 날짜 선택 네비게이터 (모바일 보안 정책 우회식 디자인 적용) -->
             <div class="bg-white px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0 shadow-sm">
                 <!-- 이전 날짜 버튼 -->
                 <button onclick="changeDate(-1)" class="w-11 h-11 rounded-2xl hover:bg-slate-50 active:scale-90 flex items-center justify-center text-blue-700 text-lg font-bold transition-all border border-slate-100">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
-                <div class="flex items-center justify-center">
-                    <!-- 실제 숨겨진 원본 HTML Date Input -->
-                    <input type="date" id="target-date" onchange="onDateChanged()" class="absolute opacity-0 w-0 h-0 pointer-events-none">
-                    <!-- 눈에 보이는 예쁘고 입체적인 달력 선택 버튼 (터치하면 내장 달력 실행) -->
-                    <button onclick="document.getElementById('target-date').showPicker()" 
-                        class="font-bold text-slate-800 text-[15px] hover:text-blue-700 active:scale-95 transition-all flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm">
+                
+                <!-- 하이브리드 달력 컨테이너 (실제 input을 투명하게 겹쳐 100% 열리게 구현) -->
+                <div class="relative flex items-center justify-center">
+                    <!-- 겉으로 보여지는 이쁜 날짜/요일 껍데기 디자인 -->
+                    <div class="font-bold text-slate-800 text-[15px] flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm pointer-events-none select-none">
                         <i class="fa-solid fa-calendar-days text-blue-700 text-sm"></i>
-                        <span id="date-display-text">2026-06-13 (토)</span>
-                    </button>
+                        <span id="date-display-text">오늘 날짜 로딩 중...</span>
+                    </div>
+                    
+                    <!-- 껍데기 바로 위에 완벽히 포개진 투명한 Date Input (터치하면 무조건 반응함) -->
+                    <input type="date" id="target-date" onchange="onDateChanged()" 
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                 </div>
+                
                 <!-- 다음 날짜 버튼 -->
                 <button onclick="changeDate(1)" class="w-11 h-11 rounded-2xl hover:bg-slate-50 active:scale-90 flex items-center justify-center text-blue-700 text-lg font-bold transition-all border border-slate-100">
                     <i class="fa-solid fa-chevron-right"></i>
@@ -245,9 +249,12 @@
         ];
 
         window.onload = function() {
+            // 처음 로드될 때 무조건 오늘 날짜로 갱신하여 시작!
+            currentSelectedDate = new Date();
+            initDatePicker();
+
             const savedSchool = localStorage.getItem('fixedSchool');
             if (savedSchool) {
-                initDatePicker();
                 showMainView(JSON.parse(savedSchool));
             }
         };
