@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=300;400;500;700;900&display=swap" rel="stylesheet">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -76,22 +76,22 @@
                 </button>
             </header>
 
-            <!-- 날짜 선택 네비게이터 (시원하게 크기를 넓힌 글씨 최적화 반영) -->
+            <!-- 날짜 선택 네비게이터 (PC 엣지 클릭 버그를 물리적으로 정밀 격파한 레이아웃 설계) -->
             <div class="bg-white px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0 shadow-sm sticky top-[73px] z-30">
                 <button onclick="changeDate(-1)" class="w-11 h-11 rounded-2xl hover:bg-slate-50 active:scale-90 flex items-center justify-center text-blue-700 text-lg font-bold transition-all border border-slate-100">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
                 
-                <!-- 하이브리드 달력 영역 (날짜 글씨 크기를 text-[17px]로 키우고 터치 영역도 넉넉하게 확장) -->
-                <div class="relative flex items-center justify-center cursor-pointer">
-                    <!-- 1. 눈에 보이는 디자인 버튼 (가상 레이어: text-[17px]로 시원하게 확대 완료) -->
-                    <div class="font-bold text-slate-800 text-[17px] flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm pointer-events-none select-none">
+                <!-- 하이브리드 달력 영역 (투명도와 레이어 우선순위를 완벽 배정하여 마우스클릭 무반응 버그 전면 차단) -->
+                <div class="relative flex items-center justify-center cursor-pointer w-[210px] h-[46px]">
+                    <!-- 1. 겉으로 보여지는 이쁘고 시원한 날짜 버튼 (PC 엣지에서도 넉넉한 text-[17px] 크기 유지) -->
+                    <div class="absolute inset-0 font-bold text-slate-800 text-[17px] flex items-center justify-center gap-2 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm select-none z-10 pointer-events-none">
                         <i class="fa-solid fa-calendar-days text-blue-700 text-base"></i>
                         <span id="date-display-text">오늘 날짜 로딩 중...</span>
                     </div>
-                    <!-- 2. 실제 버튼 바로 위 전체를 투명하게 완전히 덮고 있는 원본 Date Input -->
+                    <!-- 2. 실제 버튼 전체 영역을 빈틈없이 채우는 완전 투명한 원본 Date Input (z-20과 block 속성으로 마우스 포인터 직접 유도) -->
                     <input type="date" id="target-date" onchange="onDateChanged()" 
-                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20 block border-0 m-0 p-0">
                 </div>
                 
                 <button onclick="changeDate(1)" class="w-11 h-11 rounded-2xl hover:bg-slate-50 active:scale-90 flex items-center justify-center text-blue-700 text-lg font-bold transition-all border border-slate-100">
