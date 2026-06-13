@@ -120,7 +120,7 @@
                         </div>
                     </div>
 
-                    <!-- 오늘의 점심 급식 카드 (급식명 글꼴 가독성 향상) -->
+                    <!-- 오늘의 점심 급식 카드 (급식명 글꼴 부드럽게 가독성 최적화 완료) -->
                     <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
@@ -134,7 +134,7 @@
                         </div>
                     </div>
 
-                    <!-- 학년 통합 가로 정렬 대형 시간표 카드 (과목 폰트 16px 및 헤더 굵기 조정 완료) -->
+                    <!-- 학년 통합 가로 정렬 대형 시간표 카드 (과목 폰트 16px 크기 유지하며 유려한 중간 두께 튜닝) -->
                     <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
                         <div class="mb-4 border-b border-slate-100 pb-3">
                             <h3 class="font-bold text-slate-800 text-lg flex items-center gap-1.5">
@@ -148,9 +148,9 @@
                                 <thead>
                                     <tr class="bg-slate-50/80 border-b border-slate-150">
                                         <th class="py-3 text-center text-xs font-bold text-slate-400 w-[55px]">교시</th>
-                                        <th class="py-3 px-1 text-center text-[16px] font-extrabold text-blue-800">1학년</th>
-                                        <th class="py-3 px-1 text-center text-[16px] font-extrabold text-blue-800">2학년</th>
-                                        <th class="py-3 px-1 text-center text-[16px] font-extrabold text-blue-800">3학년</th>
+                                        <th class="py-3 px-1 text-center text-[16px] font-bold text-blue-800/90">1학년</th>
+                                        <th class="py-3 px-1 text-center text-[16px] font-bold text-blue-800/90">2학년</th>
+                                        <th class="py-3 px-1 text-center text-[16px] font-bold text-blue-800/90">3학년</th>
                                     </tr>
                                 </thead>
                                 <tbody id="unified-timetable-rows" class="divide-y divide-slate-100">
@@ -479,7 +479,7 @@
 
             displayTodayQuote();
 
-            // --- 급식 연동 ---
+            // --- 급식 연동 (글씨 굵기 유연한 소프트 튜닝) ---
             const mealContentBox = document.getElementById('meal-content-box');
             mealContentBox.innerHTML = '<div class="text-center py-4 text-xs text-slate-400"><i class="fa-solid fa-spinner animate-spin"></i> 오늘 맛있는 밥을 준비하고 있어요...</div>';
 
@@ -497,17 +497,19 @@
                             let allergyMatch = item.match(/\([0-9.]+\)/g);
                             
                             if (cleanName) {
+                                // 글자 굵기를 무거운 font-bold 대신 부드러운 font-medium(500)으로 보정
                                 if (showAllergies && allergyMatch) {
-                                    cleanList.push(`<span class="font-bold text-slate-800 text-[16px]">${cleanName}</span><span class="text-[10px] text-blue-600 font-bold ml-1">${allergyMatch[0]}</span>`);
+                                    cleanList.push(`<span class="font-medium text-slate-700 text-[16px]">${cleanName}</span><span class="text-[10px] text-blue-600 font-bold ml-1">${allergyMatch[0]}</span>`);
                                 } else {
-                                    cleanList.push(`<span class="font-bold text-slate-800 text-[16px]">${cleanName}</span>`);
+                                    cleanList.push(`<span class="font-medium text-slate-700 text-[16px]">${cleanName}</span>`);
                                 }
                             }
                         });
 
+                        // 컨테이너 래퍼의 font-bold를 제거하여 부드럽고 가독성 넘치게 정돈
                         mealContentBox.innerHTML = `
-                            <div class="text-[16px] text-center leading-relaxed text-slate-800 font-bold py-2 flex flex-wrap justify-center gap-y-1.5">
-                                ${cleanList.join('<span class="text-slate-350 mx-2 font-normal">|</span>')}
+                            <div class="text-[16px] text-center leading-relaxed text-slate-700 py-2 flex flex-wrap justify-center gap-y-1.5">
+                                ${cleanList.join('<span class="text-slate-300 mx-2 font-normal">|</span>')}
                             </div>
                         `;
                     } else {
@@ -602,19 +604,20 @@
                     let rowsHtml = '';
                     for (let p = 1; p <= maxActivePeriod; p++) {
                         const makeSubjectDisplay = (subj) => {
-                            if (!subj) return '<span class="text-slate-300 font-normal">-</span>';
+                            if (!subj) return '<span class="text-slate-350 font-normal">-</span>';
                             const teacher = savedMapping[subj];
                             
+                            // 과목과 쌤 성함의 무거운 font-bold를 시각적으로 유려한 font-medium/normal로 정밀 보정
                             if (teacher) {
                                 return `
                                     <div onclick="showTeacherTooltip('${subj}')" class="relative inline-flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-transform w-full py-1">
-                                        <div class="relative inline-block font-bold text-slate-800 text-[16px] leading-tight">${subj}</div>
-                                        <span class="text-[12px] text-blue-600 font-extrabold leading-none mt-1.5">${teacher} 쌤</span>
+                                        <div class="relative inline-block font-medium text-slate-700 text-[16px] leading-tight">${subj}</div>
+                                        <span class="text-[12px] text-blue-600 font-bold leading-none mt-1.5">${teacher} 쌤</span>
                                     </div>
                                 `;
                             }
                             return `
-                                <div onclick="showTeacherTooltip('${subj}')" class="cursor-pointer active:scale-95 transition-transform w-full py-1 text-[16px] text-slate-800 font-bold">${subj}</div>
+                                <div onclick="showTeacherTooltip('${subj}')" class="cursor-pointer active:scale-95 transition-transform w-full py-1 text-[16px] text-slate-700 font-medium">${subj}</div>
                             `;
                         };
 
