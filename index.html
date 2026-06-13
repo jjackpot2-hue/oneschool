@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>온스쿨 (OnSchool) - 실시간 급식 & 시간표 & 학사일정</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=300;400;500;700;900&display=swap" rel="stylesheet">
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -16,17 +13,21 @@
             font-family: 'Noto Sans KR', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
+        /* 스크롤바를 숨기되 스크롤 기능은 정상 작동하도록 수정 */
         .custom-scrollbar::-webkit-scrollbar {
             display: none;
         }
+        .custom-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+            -webkit-overflow-scrolling: touch; /* 모바일 부드러운 스크롤 */
+        }
     </style>
 </head>
-<body class="min-h-screen text-slate-800 flex flex-col antialiased bg-slate-100/50 overflow-hidden">
+<body class="min-h-screen text-slate-800 flex flex-col antialiased bg-slate-100/50 overflow-x-hidden">
 
-    <!-- App Container (dvh 단위를 적용해 아이폰 사파리 하단바 가림 현상 완벽 방어) -->
-    <div class="flex-1 flex flex-col max-w-md mx-auto w-full bg-white shadow-xl relative overflow-hidden min-h-[100dvh] h-[100dvh]">
+    <div class="flex-1 flex flex-col max-w-md mx-auto w-full bg-white shadow-xl relative min-h-screen h-auto overflow-x-hidden">
         
-        <!-- ==================== 1단계: 학교 등록 화면 ==================== -->
         <div id="setup-view" class="flex-1 flex flex-col justify-start p-6 bg-white overflow-y-auto custom-scrollbar pt-12 pb-8">
             <div class="text-center mb-8 shrink-0">
                 <div class="inline-flex items-center justify-center w-18 h-16 rounded-3xl bg-blue-800 text-white shadow-lg shadow-blue-100 mb-4">
@@ -34,11 +35,9 @@
                 </div>
                 <h1 class="text-3xl font-bold text-slate-900 tracking-tight">온스쿨 <span class="text-blue-700">OnSchool</span></h1>
                 <p class="text-slate-500 text-base mt-2 font-medium">우리 학교 급식과 시간표를 실시간으로!</p>
-                <!-- 제작자 서명 유지 -->
                 <p class="text-slate-400 text-xs mt-2.5 font-normal tracking-wide">made by pass ssam</p>
             </div>
 
-            <!-- 검색 입력창 (flex 내 min-w-0과 shrink-0을 결합하여 가로 뚫기 버그 완전 방어) -->
             <div class="bg-slate-50 border border-slate-150 rounded-3xl p-5 shadow-sm space-y-3 shrink-0">
                 <label class="block text-slate-700 font-bold text-base">🏫 내 학교 검색</label>
                 <div class="flex gap-2 w-full overflow-hidden">
@@ -49,22 +48,18 @@
                     </button>
                 </div>
                 
-                <!-- 검색 결과 리스트 -->
                 <div id="search-results" class="space-y-2 max-h-60 overflow-y-auto pt-2 custom-scrollbar">
                 </div>
             </div>
         </div>
 
-        <!-- ==================== 2단계: 메인 급식/시간표 대시보드 ==================== -->
-        <div id="main-view" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-50/55 animate-fade-in">
-            <!-- 상단 헤더 -->
-            <header class="bg-white border-b border-slate-100 px-5 py-4 flex items-center justify-between shrink-0 shadow-sm">
+        <div id="main-view" class="hidden flex-1 flex flex-col bg-slate-50/55 animate-fade-in">
+            <header class="bg-white border-b border-slate-100 px-5 py-4 flex items-center justify-between shrink-0 shadow-sm sticky top-0 z-30">
                 <div class="flex items-center gap-2.5">
                     <div class="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-700">
                         <i class="fa-solid fa-school text-xl"></i>
                     </div>
                     <div>
-                        <!-- 학교명 폰트 크기 최적화 -->
                         <h2 id="school-name-display" class="font-bold text-slate-900 text-xl leading-none">학교 이름</h2>
                         <span class="text-[10px] text-blue-700 mt-1 inline-block font-semibold bg-blue-50 px-1.5 py-0.5 rounded">실시간 교육부 NEIS 연동</span>
                     </div>
@@ -74,36 +69,27 @@
                 </button>
             </header>
 
-            <!-- 날짜 선택 네비게이터 (모바일 보안 정책 우회식 디자인 적용) -->
-            <div class="bg-white px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0 shadow-sm">
-                <!-- 이전 날짜 버튼 -->
+            <div class="bg-white px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0 shadow-sm sticky top-[73px] z-30">
                 <button onclick="changeDate(-1)" class="w-11 h-11 rounded-2xl hover:bg-slate-50 active:scale-90 flex items-center justify-center text-blue-700 text-lg font-bold transition-all border border-slate-100">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
                 
-                <!-- 하이브리드 달력 컨테이너 (실제 input을 투명하게 겹쳐 100% 열리게 구현) -->
                 <div class="relative flex items-center justify-center">
-                    <!-- 겉으로 보여지는 이쁜 날짜/요일 껍데기 디자인 -->
                     <div class="font-bold text-slate-800 text-[15px] flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm pointer-events-none select-none">
                         <i class="fa-solid fa-calendar-days text-blue-700 text-sm"></i>
                         <span id="date-display-text">오늘 날짜 로딩 중...</span>
                     </div>
-                    
-                    <!-- 껍데기 바로 위에 완벽히 포개진 투명한 Date Input (터치하면 무조건 반응함) -->
                     <input type="date" id="target-date" onchange="onDateChanged()" 
                         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                 </div>
                 
-                <!-- 다음 날짜 버튼 -->
                 <button onclick="changeDate(1)" class="w-11 h-11 rounded-2xl hover:bg-slate-50 active:scale-90 flex items-center justify-center text-blue-700 text-lg font-bold transition-all border border-slate-100">
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
             </div>
 
-            <!-- 스크롤 가능한 메인 컨텐츠 영역 (아이디 'dashboard-scroll-content' 부여) -->
-            <div id="dashboard-scroll-content" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar pb-12">
+            <div id="dashboard-scroll-content" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar pb-16">
                 
-                <!-- 주말 메시지 -->
                 <div id="weekend-view" class="hidden bg-blue-50/50 border border-blue-100 rounded-3xl p-8 text-center">
                     <span class="text-4xl block mb-2">🥳</span>
                     <h3 class="font-bold text-blue-900 text-lg">오늘은 신나는 주말입니다!</h3>
@@ -111,18 +97,15 @@
                 </div>
 
                 <div id="weekday-content" class="space-y-4">
-                    <!-- [위치 이동 및 리디자인] 오늘의 학교 행사 (가장 가독성 높은 최상단 배치) -->
                     <div id="schedule-card" class="hidden bg-white border border-emerald-100/80 rounded-3xl p-5 shadow-sm border-l-4 border-l-emerald-500 animate-fade-in">
                         <div class="flex items-center gap-2 mb-3">
                             <i class="fa-solid fa-calendar-check text-emerald-600 text-xl"></i>
                             <h3 class="font-bold text-slate-800 text-lg">오늘의 학교 행사</h3>
                         </div>
                         <div id="schedule-content-box" class="bg-emerald-50/30 border border-emerald-100/40 rounded-2xl p-4 flex flex-col gap-2.5">
-                            <!-- 실시간으로 행사 데이터가 들어가는 공간 -->
                         </div>
                     </div>
 
-                    <!-- 오늘의 점심 급식 카드 -->
                     <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
@@ -132,12 +115,10 @@
                                 알레르기 표시
                             </button>
                         </div>
-                        
                         <div id="meal-content-box" class="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex items-center justify-center">
                         </div>
                     </div>
 
-                    <!-- 학년 통합 가로 정렬 대형 시간표 카드 -->
                     <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
                         <div class="mb-4 border-b border-slate-100 pb-3">
                             <h3 class="font-bold text-slate-800 text-lg flex items-center gap-1.5">
@@ -146,7 +127,6 @@
                             <p class="text-xs text-slate-400 mt-1 font-medium">교시별로 각 학년별 과목을 나란히 비교합니다.</p>
                         </div>
 
-                        <!-- 통합 테이블 구조 -->
                         <div class="overflow-hidden rounded-2xl border border-slate-150">
                             <table class="w-full text-left border-collapse table-fixed">
                                 <thead>
@@ -168,7 +148,6 @@
                             </table>
                         </div>
 
-                        <!-- 쌤 매칭 모달을 여는 전용 하단 조작 영역 -->
                         <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end">
                             <button onclick="openTeacherModal()" class="text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 transition-all flex items-center gap-1.5 shadow-sm">
                                 <i class="fa-solid fa-user-pen text-xs"></i>과목별 담당 쌤 입력하기
@@ -176,7 +155,6 @@
                         </div>
                     </div>
 
-                    <!-- 오늘의 한 줄 명언 카드 -->
                     <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
                         <div class="flex items-center gap-2 mb-3">
                             <i class="fa-solid fa-quote-left text-blue-700 text-base"></i>
@@ -188,17 +166,13 @@
                         </div>
                     </div>
 
-                    <!-- 메인 화면 최하단 서명 -->
                     <div class="text-center pt-2 pb-1">
                         <span class="text-[11px] text-slate-300 font-normal tracking-wider select-none">made by pass ssam</span>
                     </div>
-
                 </div>
-
             </div>
         </div>
 
-        <!-- ==================== 3단계: 담당 선생님 설정 모달 (팝업) ==================== -->
         <div id="teacher-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
             <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -211,9 +185,7 @@
                 </div>
                 <p class="text-xs text-slate-500 font-medium">여기에 등록해둔 성(혹은 성함)은 시간표 과목 옆에 <b>과목(쌤)</b> 형태로 계속 보여집니다.</p>
                 
-                <!-- 입력 필드들이 유동적으로 채워질 구역 -->
                 <div id="teacher-input-fields" class="space-y-3 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
-                    <!-- 스크립트에서 자동 생성 -->
                 </div>
 
                 <div class="flex gap-2.5 pt-2">
@@ -229,18 +201,14 @@
 
     </div>
 
-    <!-- 토스트 알림 -->
     <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-900/90 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-lg transition-all opacity-0 pointer-events-none z-50"></div>
 
     <script>
         const API_BASE_URL = "https://open.neis.go.kr/hub";
         let currentSelectedDate = new Date();
         let showAllergies = false;
-        
-        // 시간표 매트릭스 백업 (선생님 입력 창 활성화용)
         let currentSubjectsSet = new Set();
 
-        // 고정 데이터 기반 오늘의 명언 목록
         const quotes = [
             { text: "배움은 우연히 얻어지는 것이 아니라, 열정으로 갈구하고 부지런히 가꾸어야 하는 것이다.", author: "애비게일 애덤스" },
             { text: "어제와 똑같이 살면서 다른 미래를 기대하는 것은 지혜롭지 못하다.", author: "알베르트 아인슈타인" },
@@ -260,7 +228,6 @@
         ];
 
         window.onload = function() {
-            // 처음 로드될 때 무조건 오늘 날짜로 갱신하여 시작!
             currentSelectedDate = new Date();
             initDatePicker();
 
@@ -281,20 +248,15 @@
             }, 2500);
         }
 
-        // 선택된 날짜와 해당하는 요일을 포맷하여 요일 텍스트를 업데이트하는 헬퍼 함수
         function updateDateAndWeekdayDisplay() {
             const yyyy = currentSelectedDate.getFullYear();
             const mm = String(currentSelectedDate.getMonth() + 1).padStart(2, '0');
             const dd = String(currentSelectedDate.getDate()).padStart(2, '0');
             
-            // 요일 구하기
             const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
             const dayName = weekDays[currentSelectedDate.getDay()];
             
-            // 실제 date input 값 동기화
             document.getElementById('target-date').value = `${yyyy}-${mm}-${dd}`;
-            
-            // 겉으로 보여지는 텍스트 버튼 안 요일 텍스트 갱신
             document.getElementById('date-display-text').innerText = `${yyyy}-${mm}-${dd} (${dayName})`;
         }
 
@@ -302,7 +264,6 @@
             updateDateAndWeekdayDisplay();
         }
 
-        // 날짜를 시드로 작동하는 고정식 랜덤 명언 선택기
         function displayTodayQuote() {
             const yyyy = currentSelectedDate.getFullYear();
             const mm = currentSelectedDate.getMonth();
@@ -359,7 +320,6 @@
             showToast('우리 학교가 성공적으로 등록되었습니다!');
         }
 
-        // 특정 날짜 전후 이동 함수
         function changeDate(days) {
             currentSelectedDate.setDate(currentSelectedDate.getDate() + days);
             updateDateAndWeekdayDisplay();
@@ -367,7 +327,6 @@
             if (savedSchool) showMainView(JSON.parse(savedSchool));
         }
 
-        // 인풋 날짜 직접 입력 변경 핸들러
         function onDateChanged() {
             const selectedVal = document.getElementById('target-date').value;
             if (selectedVal) {
@@ -390,21 +349,17 @@
             if (savedSchool) showMainView(JSON.parse(savedSchool));
         }
 
-        // --- 쌤 성함 입력 모달 관리 ---
         function openTeacherModal() {
             const fieldsContainer = document.getElementById('teacher-input-fields');
             fieldsContainer.innerHTML = '';
-
             const savedMapping = JSON.parse(localStorage.getItem('teacherMapping') || '{}');
 
-            // 과목 목록이 비어있는 경우 방지
             if (currentSubjectsSet.size === 0) {
                 fieldsContainer.innerHTML = '<div class="text-center py-4 text-xs text-slate-400 font-medium">📋 현재 날짜의 시간표를 먼저 받아와주세요!</div>';
                 document.getElementById('teacher-modal').classList.remove('hidden');
                 return;
             }
 
-            // 알파벳 순서대로 정렬해서 렌더링
             const sortedSubjects = Array.from(currentSubjectsSet).sort();
             sortedSubjects.forEach(subject => {
                 const currentVal = savedMapping[subject] || '';
@@ -442,19 +397,17 @@
             closeTeacherModal();
             showToast('선생님 매칭 정보가 반영되었습니다!');
             
-            // 시간표 새로 렌더링
             const savedSchool = localStorage.getItem('fixedSchool');
             if (savedSchool) showMainView(JSON.parse(savedSchool));
         }
 
-        // 클릭(터치) 시 쌤 이름을 보여주는 편리한 알림 팝업 기능
         window.showTeacherTooltip = function(subjectName) {
             const savedMapping = JSON.parse(localStorage.getItem('teacherMapping') || '{}');
             const teacher = savedMapping[subjectName];
             if (teacher) {
                 showToast(`💡 ${subjectName} 담당은 [${teacher}] 선생님입니다.`);
             } else {
-                showToast(`💡 ${subjectName} 담당 쌤을 등록해 보세요! (하단 과목별 담당 쌤 입력하기 버튼)`);
+                showToast(`💡 ${subjectName} 담당 쌤을 등록해 보세요!`);
             }
         };
 
@@ -463,15 +416,14 @@
             document.getElementById('main-view').classList.remove('hidden');
             document.getElementById('school-name-display').innerText = schoolInfo.schoolName;
 
-            // [사파리 스크롤 리셋 핵심 비법] 
-            // 2단계 메인뷰가 열리는 순간, 스크롤 영역의 높이를 무조건 맨 위(0)로 강제 정렬합니다.
+            // 모바일 및 PC 스크롤 최상단 강제 리셋 보장
+            window.scrollTo(0, 0);
             const scrollContainer = document.getElementById('dashboard-scroll-content');
             if (scrollContainer) {
                 scrollContainer.scrollTop = 0;
             }
 
             const dayOfWeek = currentSelectedDate.getDay();
-            
             if (dayOfWeek === 0 || dayOfWeek === 6) {
                 document.getElementById('weekday-content').classList.add('hidden');
                 document.getElementById('weekend-view').classList.remove('hidden');
@@ -486,10 +438,9 @@
             const dd = String(currentSelectedDate.getDate()).padStart(2, '0');
             const dateStr = `${yyyy}${mm}${dd}`;
 
-            // 명언 출력 호출
             displayTodayQuote();
 
-            // --- 1. 급식 연동 (부드러운 미디엄 서체) ---
+            // --- 급식 연동 ---
             const mealContentBox = document.getElementById('meal-content-box');
             mealContentBox.innerHTML = '<div class="text-center py-4 text-xs text-slate-400"><i class="fa-solid fa-spinner animate-spin"></i> 오늘 맛있는 밥을 준비하고 있어요...</div>';
 
@@ -528,7 +479,7 @@
                     mealContentBox.innerHTML = '<div class="text-center text-sm text-rose-500 font-medium py-4">❌ 급식 정보 로드 실패</div>';
                 });
 
-            // --- 2. 학년통합 가로 격자 시간표 연동 ---
+            // --- 시간표 연동 ---
             let schType = "misTimetable"; 
             let isElementary = false;
             if (schoolInfo.schoolName.includes("초등학교")) {
@@ -541,7 +492,6 @@
             }
 
             const unifiedRowsContainer = document.getElementById('unified-timetable-rows');
-
             const grades = [1, 2, 3];
             let fetchPromises = [];
 
@@ -566,7 +516,6 @@
                     3: {1:'', 2:'', 3:'', 4:'', 5:'', 6:'', 7:''}
                 };
 
-                // 새로운 과목 셋 초기화
                 currentSubjectsSet.clear();
 
                 results.forEach(res => {
@@ -583,14 +532,11 @@
                         }
                     }
                     matrix[grade][period] = subjectName;
-
-                    if (subjectName) {
-                        currentSubjectsSet.add(subjectName);
-                    }
+                    if (subjectName) currentSubjectsSet.add(subjectName);
                 });
 
                 let maxActivePeriod = 4; 
-                let hasAnyData = false; // 하루 시간표 중 과목이 하나라도 있는지 체크하는 플래그
+                let hasAnyData = false;
                 
                 for(let p = 7; p >= 1; p--) {
                     if (matrix[1][p] || matrix[2][p] || matrix[3][p]) {
@@ -600,12 +546,9 @@
                     }
                 }
 
-                // 저장된 담당 선생님 매칭 데이터 로드
                 const savedMapping = JSON.parse(localStorage.getItem('teacherMapping') || '{}');
-
                 unifiedRowsContainer.innerHTML = '';
                 
-                // 만약 7월 3일 이후처럼 모든 학년의 모든 교시가 싹 비어있다면, 안내 문구를 시원하게 띄워줍니다!
                 if (!hasAnyData) {
                     unifiedRowsContainer.innerHTML = `
                         <tr>
@@ -621,26 +564,18 @@
                     for (let p = 1; p <= maxActivePeriod; p++) {
                         const makeSubjectDisplay = (subj) => {
                             if (!subj) return '<span class="text-slate-300 font-normal">-</span>';
-                            
                             const teacher = savedMapping[subj];
                             
-                            // 쌤이 지정된 경우: 과목 우측 상단에 파란색 알림 도트를 제거하고, 아래에 파란색 글씨로만 깔끔하게 성함 얹기
                             if (teacher) {
                                 return `
                                     <div onclick="showTeacherTooltip('${subj}')" class="relative inline-flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-transform w-full">
-                                        <div class="relative inline-block font-medium text-slate-700 text-[15px] leading-tight">
-                                            ${subj}
-                                        </div>
-                                        <!-- 쌤 이름은 산만하지 않게 파란색(text-blue-600)으로 부드럽고 명확하게 출력 -->
+                                        <div class="relative inline-block font-medium text-slate-700 text-[15px] leading-tight">${subj}</div>
                                         <span class="text-[11px] text-blue-600 font-bold leading-none mt-1">${teacher} 쌤</span>
                                     </div>
                                 `;
                             }
-                            
                             return `
-                                <div onclick="showTeacherTooltip('${subj}')" class="cursor-pointer active:scale-95 transition-transform w-full text-[15px] text-slate-700 font-medium">
-                                    ${subj}
-                                </div>
+                                <div onclick="showTeacherTooltip('${subj}')" class="cursor-pointer active:scale-95 transition-transform w-full text-[15px] text-slate-700 font-medium">${subj}</div>
                             `;
                         };
 
@@ -662,20 +597,12 @@
                     unifiedRowsContainer.innerHTML = rowsHtml;
                 }
             }).catch(() => {
-                unifiedRowsContainer.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-center py-10 text-sm text-rose-500 font-bold">
-                            ❌ 시간표 로딩 중 예상치 못한 오류 발생
-                        </td>
-                    </tr>
-                `;
+                unifiedRowsContainer.innerHTML = '<tr><td colspan="4" class="text-center py-10 text-sm text-rose-500 font-bold">❌ 시간표 로딩 오류 발생</td></tr>';
             });
 
-            // --- 3. [완벽 복구] 실시간 학교 행사 학사일정 로드 ---
+            // --- 학사일정 연동 ---
             const scheduleCard = document.getElementById('schedule-card');
             const scheduleContentBox = document.getElementById('schedule-content-box');
-            
-            // 초기 비우기 및 로딩 설정
             scheduleCard.classList.add('hidden');
             scheduleContentBox.innerHTML = '';
 
@@ -687,12 +614,8 @@
                         let scheduleItems = [];
 
                         rows.forEach(item => {
-                            // [정밀 타격 수정] 실제 나이스 학사일정 API의 행사명 컬럼은 'EVENT_NM' 입니다!
                             const eventName = (item.EVENT_NM || "").trim();
-                            
-                            // 불필요한 토요휴업일 및 주말 정보 필터링
                             if (eventName && !eventName.includes("토요휴업일") && !eventName.includes("일요일")) {
-                                // 학년 대상 필드값 분석 (예: Y가 포함된 경우 학년 꼬리표 붙이기)
                                 let targetGradeText = "";
                                 if (item.ONE_GRADE_EVENT_YN === "Y" && item.TWO_GRADE_EVENT_YN === "Y" && item.THREE_GRADE_EVENT_YN === "Y") {
                                     targetGradeText = "전학년";
@@ -703,17 +626,12 @@
                                     if (item.THREE_GRADE_EVENT_YN === "Y") targets.push("3학년");
                                     targetGradeText = targets.join(", ");
                                 }
-                                
-                                scheduleItems.push({
-                                    name: eventName,
-                                    grade: targetGradeText
-                                });
+                                scheduleItems.push({ name: eventName, grade: targetGradeText });
                             }
                         });
 
                         if (scheduleItems.length > 0) {
-                            scheduleCard.classList.remove('hidden'); // 행사 카드를 당당하게 노출!
-                            
+                            scheduleCard.classList.remove('hidden');
                             let html = '';
                             scheduleItems.forEach(item => {
                                 const gradeBadge = item.grade ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded-md ml-1.5">${item.grade}</span>` : '';
@@ -732,7 +650,6 @@
                     }
                 })
                 .catch(() => {
-                    // 오류 시 화면 안 깨지게 깔끔히 숨김
                     scheduleCard.classList.add('hidden');
                 });
         }
