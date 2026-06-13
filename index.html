@@ -74,16 +74,24 @@
                 </button>
             </header>
 
-            <!-- 날짜 선택 네비게이터 -->
-            <div class="bg-white px-5 py-3.5 border-b border-slate-100 flex items-center justify-between shrink-0">
-                <button onclick="changeDate(-1)" class="w-11 h-11 rounded-xl hover:bg-blue-50 flex items-center justify-center text-blue-700 text-lg font-bold transition-all">
+            <!-- 날짜 선택 네비게이터 (가독성을 극대화한 세련된 달력 선택 버튼 디자인 적용) -->
+            <div class="bg-white px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0 shadow-sm">
+                <!-- 이전 날짜 버튼 -->
+                <button onclick="changeDate(-1)" class="w-11 h-11 rounded-2xl hover:bg-slate-50 active:scale-90 flex items-center justify-center text-blue-700 text-lg font-bold transition-all border border-slate-100">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
-                <div class="flex items-center gap-2">
-                    <input type="date" id="target-date" onchange="onDateChanged()" 
-                        class="border-0 bg-transparent font-bold text-slate-800 text-lg focus:outline-none focus:ring-0 text-center cursor-pointer">
+                <div class="flex items-center justify-center">
+                    <!-- 실제 숨겨진 원본 HTML Date Input -->
+                    <input type="date" id="target-date" onchange="onDateChanged()" class="absolute opacity-0 w-0 h-0 pointer-events-none">
+                    <!-- 눈에 보이는 예쁘고 입체적인 달력 선택 버튼 (터치하면 내장 달력 실행) -->
+                    <button onclick="document.getElementById('target-date').showPicker()" 
+                        class="font-bold text-slate-800 text-[15px] hover:text-blue-700 active:scale-95 transition-all flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm">
+                        <i class="fa-solid fa-calendar-days text-blue-700 text-sm"></i>
+                        <span id="date-display-text">2026-06-13 (토)</span>
+                    </button>
                 </div>
-                <button onclick="changeDate(1)" class="w-11 h-11 rounded-xl hover:bg-blue-50 flex items-center justify-center text-blue-700 text-lg font-bold transition-all">
+                <!-- 다음 날짜 버튼 -->
+                <button onclick="changeDate(1)" class="w-11 h-11 rounded-2xl hover:bg-slate-50 active:scale-90 flex items-center justify-center text-blue-700 text-lg font-bold transition-all border border-slate-100">
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
             </div>
@@ -255,11 +263,25 @@
             }, 2500);
         }
 
-        function initDatePicker() {
+        // 선택된 날짜와 해당하는 요일을 포맷하여 요일 텍스트를 업데이트하는 헬퍼 함수
+        function updateDateAndWeekdayDisplay() {
             const yyyy = currentSelectedDate.getFullYear();
             const mm = String(currentSelectedDate.getMonth() + 1).padStart(2, '0');
             const dd = String(currentSelectedDate.getDate()).padStart(2, '0');
+            
+            // 요일 구하기
+            const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+            const dayName = weekDays[currentSelectedDate.getDay()];
+            
+            // 실제 date input 값 동기화
             document.getElementById('target-date').value = `${yyyy}-${mm}-${dd}`;
+            
+            // 겉으로 보여지는 텍스트 버튼 안 요일 텍스트 갱신
+            document.getElementById('date-display-text').innerText = `${yyyy}-${mm}-${dd} (${dayName})`;
+        }
+
+        function initDatePicker() {
+            updateDateAndWeekdayDisplay();
         }
 
         // 날짜를 시드로 작동하는 고정식 랜덤 명언 선택기
@@ -321,15 +343,19 @@
 
         function changeDate(days) {
             currentSelectedDate.setDate(currentSelectedDate.getDate() + days);
-            initDatePicker();
+            updateDateAndWeekdayDisplay();
             const savedSchool = localStorage.getItem('fixedSchool');
             if (savedSchool) showMainView(JSON.parse(savedSchool));
         }
 
         function onDateChanged() {
-            currentSelectedDate = new Date(document.getElementById('target-date').value);
-            const savedSchool = localStorage.getItem('fixedSchool');
-            if (savedSchool) showMainView(JSON.parse(savedSchool));
+            const selectedVal = document.getElementById('target-date').value;
+            if (selectedVal) {
+                currentSelectedDate = new Date(selectedVal);
+                updateDateAndWeekdayDisplay();
+                const savedSchool = localStorage.getItem('fixedSchool');
+                if (savedSchool) showMainView(JSON.parse(savedSchool));
+            }
         }
 
         function toggleAllergyNumbers() {
