@@ -25,6 +25,29 @@
             scrollbar-width: none;  /* Firefox */
             -webkit-overflow-scrolling: touch; /* 모바일 부드러운 스크롤 */
         }
+
+        /* 🧙‍♂️ 전 세계 모든 브라우저의 달력 터치 영역을 버튼 전체로 확장하는 마법의 CSS */
+        .magic-date-input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 20;
+            display: block;
+        }
+        .magic-date-input::-webkit-calendar-picker-indicator {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            cursor: pointer;
+            opacity: 0;
+            display: block;
+        }
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col antialiased bg-slate-100/50 overflow-x-hidden">
@@ -76,22 +99,22 @@
                 </button>
             </header>
 
-            <!-- 날짜 선택 네비게이터 (시원시원하게 큰 글씨 복구 및 엣지 클릭 버그 완벽 해결) -->
+            <!-- 날짜 선택 네비게이터 (시원하게 큰 글씨 복구 및 엣지 클릭 버그 완벽 해결) -->
             <div class="bg-white px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0 shadow-sm sticky top-[73px] z-30">
                 <button onclick="changeDate(-1)" class="w-11 h-11 rounded-2xl hover:bg-slate-50 active:scale-90 flex items-center justify-center text-blue-700 text-lg font-bold transition-all border border-slate-100">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
                 
-                <!-- 날짜 선택 달력 영역 (가로 너비 제약 해제 및 시원한 text-[18px] 사이즈 복원 완료) -->
-                <div class="relative flex items-center justify-center">
-                    <!-- 보이는 시원한 요일 버튼 (터치/클릭 즉시 브라우저 고유 showPicker 실행) -->
-                    <button onclick="triggerDatePicker()" class="font-bold text-slate-800 text-[18px] hover:text-blue-700 active:scale-95 transition-all flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm">
+                <!-- 날짜 선택 달력 영역 (마우스/터치 무반응 오류 완벽 우회 완료) -->
+                <div class="relative flex items-center justify-center w-[210px] h-[48px]">
+                    <!-- 1. 눈에 보이며 반응이 끝내주는 예쁜 날짜 버튼 디자인 -->
+                    <div class="absolute inset-0 font-bold text-slate-800 text-[18px] flex items-center justify-center gap-2 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm select-none z-10 pointer-events-none">
                         <i class="fa-solid fa-calendar-days text-blue-700 text-base"></i>
                         <span id="date-display-text">오늘 날짜 로딩 중...</span>
-                    </button>
-                    <!-- 실제 숨겨진 원본 HTML Date Input (위치 겹침 부작용을 원천 차단하기 위해 투명으로 완전히 숨김) -->
+                    </div>
+                    <!-- 2. 실제 버튼 전체 크기로 확장된 투명한 진짜 날짜 인풋 (마법의 CSS 클래스 적용 완료!) -->
                     <input type="date" id="target-date" onchange="onDateChanged()" 
-                        class="absolute opacity-0 w-0 h-0 pointer-events-none">
+                        class="magic-date-input">
                 </div>
                 
                 <button onclick="changeDate(1)" class="w-11 h-11 rounded-2xl hover:bg-slate-50 active:scale-90 flex items-center justify-center text-blue-700 text-lg font-bold transition-all border border-slate-100">
@@ -286,23 +309,6 @@
                 toast.classList.remove('opacity-100');
                 toast.classList.add('opacity-0');
             }, 2500);
-        }
-
-        // 구글 크롬, 엣지, 사파리 3대 브라우저 달력 100% 무조건 여는 보안 우회 유저 제스처 결합형 함수
-        function triggerDatePicker() {
-            const dateInput = document.getElementById('target-date');
-            if (dateInput) {
-                // 브라우저 내장 API가 완벽하게 지원되는지 검사 후 우회 트리거 작동
-                if (typeof dateInput.showPicker === 'function') {
-                    try {
-                        dateInput.showPicker();
-                    } catch (e) {
-                        dateInput.click();
-                    }
-                } else {
-                    dateInput.click();
-                }
-            }
         }
 
         function updateDateAndWeekdayDisplay() {
