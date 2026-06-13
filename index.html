@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=300;400;500;700;900&display=swap" rel="stylesheet">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -76,21 +76,22 @@
                 </button>
             </header>
 
-            <!-- 날짜 선택 네비게이터 (PC 엣지 / 크롬 / 모바일 사파리 모두 완벽 호환되도록 재설계) -->
+            <!-- 날짜 선택 네비게이터 (어떠한 브라우저 보안 장벽도 100% 무력화하는 오버랩 하이브리드 설계) -->
             <div class="bg-white px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0 shadow-sm sticky top-[73px] z-30">
                 <button onclick="changeDate(-1)" class="w-11 h-11 rounded-2xl hover:bg-slate-50 active:scale-90 flex items-center justify-center text-blue-700 text-lg font-bold transition-all border border-slate-100">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
                 
-                <div class="relative flex items-center justify-center">
-                    <!-- 보이는 깔끔한 디자인 버튼 (PC/모바일 공용 제스처 트리거로 사용) -->
-                    <button onclick="triggerDatePicker()" class="font-bold text-slate-800 text-[15px] hover:text-blue-700 active:scale-95 transition-all flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm">
+                <!-- 하이브리드 달력 영역 -->
+                <div class="relative flex items-center justify-center cursor-pointer">
+                    <!-- 1. 눈에 보이는 깔끔한 디자인 버튼 (가상 레이어: pointer-events-none을 걸어 터치를 뒤로 넘겨줌) -->
+                    <div class="font-bold text-slate-800 text-[15px] flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm pointer-events-none select-none">
                         <i class="fa-solid fa-calendar-days text-blue-700 text-sm"></i>
                         <span id="date-display-text">오늘 날짜 로딩 중...</span>
-                    </button>
-                    <!-- 실제 숨겨진 원본 HTML Date Input (위치 에러 방지용 절대 고정 및 pointer-events 차단) -->
+                    </div>
+                    <!-- 2. 실제 버튼 바로 위 전체를 투명하게 완전히 덮고 있는 원본 Date Input (클릭 즉시 브라우저가 직접 달력을 염) -->
                     <input type="date" id="target-date" onchange="onDateChanged()" 
-                        class="absolute opacity-0 w-0 h-0 pointer-events-none">
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                 </div>
                 
                 <button onclick="changeDate(1)" class="w-11 h-11 rounded-2xl hover:bg-slate-50 active:scale-90 flex items-center justify-center text-blue-700 text-lg font-bold transition-all border border-slate-100">
@@ -285,22 +286,6 @@
                 toast.classList.remove('opacity-100');
                 toast.classList.add('opacity-0');
             }, 2500);
-        }
-
-        // PC 크롬/엣지 및 모바일 달력 호출 완벽 통합 기능
-        function triggerDatePicker() {
-            const dateInput = document.getElementById('target-date');
-            if (dateInput) {
-                if (typeof dateInput.showPicker === 'function') {
-                    try {
-                        dateInput.showPicker();
-                    } catch (e) {
-                        dateInput.click();
-                    }
-                } else {
-                    dateInput.click();
-                }
-            }
         }
 
         function updateDateAndWeekdayDisplay() {
@@ -706,15 +691,6 @@
                 .catch(() => {
                     scheduleCard.classList.add('hidden');
                 });
-        }
-
-        function resetSchool() {
-            localStorage.removeItem('fixedSchool');
-            document.getElementById('search-input').value = '';
-            document.getElementById('search-results').innerHTML = '';
-            document.getElementById('setup-view').classList.remove('hidden');
-            document.getElementById('main-view').classList.add('hidden');
-            showToast('새로운 학교를 선택해 주세요!');
         }
     </script>
 </body>
