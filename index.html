@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>온스쿨 (OnSchool) - 실시간 급식 & 시간표</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="h-full text-slate-800 flex flex-col antialiased bg-slate-100">
+
+    <!-- App Container -->
+    <div class="flex-1 flex flex-col max-w-md mx-auto w-full bg-white shadow-xl relative overflow-hidden h-full">
+        
+        <!-- ==================== 1단계: 학교 등록 화면 ==================== -->
+        <div id="setup-view" class="flex-1 flex flex-col justify-center p-6 bg-white">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-blue-600 text-white shadow-lg shadow-blue-100 mb-4">
+                    <i class="fa-solid fa-graduation-cap text-3xl"></i>
+                </div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">온스쿨 <span class="text-blue-600">OnSchool</span></h1>
+                <p class="text-slate-500 text-sm mt-1">우리 학교 급식과 시간표를 실시간으로!</p>
+            </div>
+
+            <!-- 검색 입력창 -->
+            <div class="bg-slate-50 border border-slate-100 rounded-3xl p-5 shadow-sm space-y-3">
+                <label class="block text-slate-700 font-bold text-sm">🏫 내 학교 검색</label>
+                <div class="flex gap-2">
+                    <input type="text" id="search-input" placeholder="학교 이름을 입력하세요 (예: 문평중)" 
+                        class="flex-1 bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+                    <button onclick="searchSchool()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-3 rounded-2xl text-sm transition-all shadow-md shadow-blue-100">
+                        검색
+                    </button>
+                </div>
+                
+                <!-- 검색 결과 리스트 -->
+                <div id="search-results" class="space-y-2 max-h-60 overflow-y-auto pt-2 custom-scrollbar">
+                    <!-- 결과가 여기에 채워집니다 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 2단계: 메인 급식/시간표 대시보드 ==================== -->
+        <div id="main-view" class="hidden flex-1 flex flex-col overflow-hidden bg-slate-50 animate-fade-in">
+            <!-- 상단 헤더 -->
+            <header class="bg-white border-b border-slate-100 px-5 py-4 flex items-center justify-between shrink-0 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
+                        <i class="fa-solid fa-school text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 id="school-name-display" class="font-bold text-slate-900 text-base leading-none">학교 이름</h2>
+                        <span class="text-[10px] text-slate-400 mt-1 inline-block">실시간 교육부 NEIS 연동</span>
+                    </div>
+                </div>
+                <button onclick="resetSchool()" class="text-xs font-semibold text-slate-500 hover:text-blue-600 border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 hover:bg-blue-50 transition-all">
+                    학교 변경
+                </button>
+            </header>
+
+            <!-- 날짜 선택 네비게이터 -->
+            <div class="bg-white px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0">
+                <button onclick="changeDate(-1)" class="w-9 h-9 rounded-xl hover:bg-slate-100 flex items-center justify-center text-blue-600 font-bold transition-all">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <div class="flex items-center gap-2">
+                    <input type="date" id="target-date" onchange="onDateChanged()" 
+                        class="border-0 bg-transparent font-bold text-slate-800 text-sm focus:outline-none focus:ring-0 text-center cursor-pointer">
+                </div>
+                <button onclick="changeDate(1)" class="w-9 h-9 rounded-xl hover:bg-slate-100 flex items-center justify-center text-blue-600 font-bold transition-all">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- 스크롤 가능한 메인 컨텐츠 영역 -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar pb-12">
+                
+                <!-- 주말 메시지 -->
+                <div id="weekend-view" class="hidden bg-blue-50 border border-blue-100 rounded-3xl p-8 text-center">
+                    <span class="text-3xl block mb-2">🥳</span>
+                    <h3 class="font-bold text-blue-900">오늘은 신나는 주말입니다!</h3>
+                    <p class="text-xs text-blue-600 mt-1">평일 날짜를 선택하시면 급식과 시간표가 나옵니다.</p>
+                </div>
+
+                <div id="weekday-content" class="space-y-4">
+                    <!-- 오늘의 점심 급식 카드 (식판 형태) -->
+                    <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-bowl-rice text-amber-500"></i> 오늘의 점심 급식
+                            </h3>
+                            <button onclick="toggleAllergyNumbers()" id="allergy-toggle-btn" class="text-[10px] font-bold text-slate-400 border border-slate-200 rounded-lg px-2 py-1">
+                                알레르기 숫자 표시
+                            </button>
+                        </div>
+                        
+                        <div id="meal-content-box" class="bg-amber-50/40 border border-amber-100/60 rounded-2xl p-4 flex items-center justify-center">
+                            <!-- 식단 내용 -->
+                        </div>
+                    </div>
+
+                    <!-- 학년 통합 가로 정렬 대형 시간표 카드 -->
+                    <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
+                        <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-calendar-day text-blue-500"></i> 학년통합 오늘 시간표
+                                </h3>
+                                <p class="text-[9px] text-slate-400 mt-0.5">매 학년 1반 기준으로 교시별 과목을 나란히 비교합니다.</p>
+                            </div>
+                            <span class="text-[9px] bg-blue-50 text-blue-600 font-extrabold px-2 py-0.5 rounded-md">1반 기준</span>
+                        </div>
+
+                        <!-- 통합 테이블 구조 -->
+                        <div class="overflow-hidden rounded-2xl border border-slate-100">
+                            <table class="w-full text-left border-collapse table-fixed">
+                                <thead>
+                                    <tr class="bg-slate-50/80 border-b border-slate-100">
+                                        <th class="py-2.5 text-center text-[10px] font-black text-slate-400 w-[55px]">교시</th>
+                                        <th class="py-2.5 px-1 text-center text-xs font-black text-blue-600">1학년</th>
+                                        <th class="py-2.5 px-1 text-center text-xs font-black text-blue-600">2학년</th>
+                                        <th class="py-2.5 px-1 text-center text-xs font-black text-blue-600">3학년</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="unified-timetable-rows" class="divide-y divide-slate-100/70">
+                                    <tr>
+                                        <td colspan="4" class="text-center py-10 text-xs text-slate-300">
+                                            <i class="fa-solid fa-spinner animate-spin text-lg block mb-2 text-blue-500"></i>
+                                            시간표 데이터 로드 중...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- 토스트 알림 -->
+    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-900/90 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-lg transition-all opacity-0 pointer-events-none z-50"></div>
+
+    <script>
+        const API_BASE_URL = "https://open.neis.go.kr/hub";
+        let currentSelectedDate = new Date();
+        let showAllergies = false;
+
+        window.onload = function() {
+            const savedSchool = localStorage.getItem('fixedSchool');
+            if (savedSchool) {
+                initDatePicker();
+                showMainView(JSON.parse(savedSchool));
+            }
+        };
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 2000);
+        }
+
+        function initDatePicker() {
+            const yyyy = currentSelectedDate.getFullYear();
+            const mm = String(currentSelectedDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(currentSelectedDate.getDate()).padStart(2, '0');
+            document.getElementById('target-date').value = `${yyyy}-${mm}-${dd}`;
+        }
+
+        function searchSchool() {
+            const query = document.getElementById('search-input').value.trim();
+            if (!query) {
+                showToast('학교 이름을 입력해 주세요!');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('search-results');
+            resultsDiv.innerHTML = '<div class="text-center py-4 text-xs text-slate-400"><i class="fa-solid fa-spinner animate-spin"></i> 학교를 검색하는 중...</div>';
+
+            fetch(`${API_BASE_URL}/schoolInfo?Type=json&pIndex=1&pSize=10&SCHUL_NM=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    resultsDiv.innerHTML = '';
+                    if (!data.schoolInfo) {
+                        resultsDiv.innerHTML = '<div class="text-center py-4 text-xs text-rose-500">❌ 학교를 찾을 수 없습니다.</div>';
+                        return;
+                    }
+                    
+                    data.schoolInfo[1].row.forEach(school => {
+                        const btn = document.createElement('button');
+                        btn.className = 'w-full text-left p-3.5 bg-white border border-slate-200 hover:border-blue-500 rounded-2xl text-xs font-bold transition-all flex justify-between items-center hover:bg-blue-50/30';
+                        btn.innerHTML = `
+                            <div>
+                                <span class="text-slate-800 text-sm block">${school.SCHUL_NM}</span>
+                                <span class="text-slate-400 text-[10px] font-normal mt-0.5 inline-block">${school.LCTN_SC_NM}</span>
+                            </div>
+                            <span class="bg-blue-50 text-blue-600 text-[10px] px-2 py-1 rounded-lg font-black">선택</span>
+                        `;
+                        btn.onclick = () => saveSchool(school.ATPT_OFCDC_SC_CODE, school.SD_SCHUL_CODE, school.SCHUL_NM);
+                        resultsDiv.appendChild(btn);
+                    });
+                })
+                .catch(() => {
+                    resultsDiv.innerHTML = '<div class="text-center py-4 text-xs text-rose-500">❌ 데이터를 불러오는 도중 오류가 발생했습니다.</div>';
+                });
+        }
+
+        function saveSchool(officeCode, schoolCode, schoolName) {
+            localStorage.setItem('fixedSchool', JSON.stringify({ officeCode, schoolCode, schoolName }));
+            initDatePicker();
+            showMainView({ officeCode, schoolCode, schoolName });
+            showToast('우리 학교가 성공적으로 등록되었습니다!');
+        }
+
+        function changeDate(days) {
+            currentSelectedDate.setDate(currentSelectedDate.getDate() + days);
+            initDatePicker();
+            const savedSchool = localStorage.getItem('fixedSchool');
+            if (savedSchool) showMainView(JSON.parse(savedSchool));
+        }
+
+        function onDateChanged() {
+            currentSelectedDate = new Date(document.getElementById('target-date').value);
+            const savedSchool = localStorage.getItem('fixedSchool');
+            if (savedSchool) showMainView(JSON.parse(savedSchool));
+        }
+
+        function toggleAllergyNumbers() {
+            showAllergies = !showAllergies;
+            const btn = document.getElementById('allergy-toggle-btn');
+            if (showAllergies) {
+                btn.className = "text-[10px] font-bold text-blue-600 border border-blue-200 bg-blue-50 rounded-lg px-2 py-1";
+            } else {
+                btn.className = "text-[10px] font-bold text-slate-400 border border-slate-200 bg-transparent rounded-lg px-2 py-1";
+            }
+            const savedSchool = localStorage.getItem('fixedSchool');
+            if (savedSchool) showMainView(JSON.parse(savedSchool));
+        }
+
+        function showMainView(schoolInfo) {
+            document.getElementById('setup-view').classList.add('hidden');
+            document.getElementById('main-view').classList.remove('hidden');
+            document.getElementById('school-name-display').innerText = schoolInfo.schoolName;
+
+            const dayOfWeek = currentSelectedDate.getDay();
+            
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                document.getElementById('weekday-content').classList.add('hidden');
+                document.getElementById('weekend-view').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('weekday-content').classList.remove('hidden');
+                document.getElementById('weekend-view').classList.add('hidden');
+            }
+
+            const yyyy = currentSelectedDate.getFullYear();
+            const mm = String(currentSelectedDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(currentSelectedDate.getDate()).padStart(2, '0');
+            const dateStr = `${yyyy}${mm}${dd}`;
+
+            // --- 1. 급식 연동 ---
+            const mealContentBox = document.getElementById('meal-content-box');
+            mealContentBox.innerHTML = '<div class="text-center py-4 text-xs text-slate-400"><i class="fa-solid fa-spinner animate-spin"></i> 오늘 맛있는 밥을 준비하고 있어요...</div>';
+
+            fetch(`${API_BASE_URL}/mealServiceDietInfo?Type=json&ATPT_OFCDC_SC_CODE=${schoolInfo.officeCode}&SD_SCHUL_CODE=${schoolInfo.schoolCode}&MLSV_YMD=${dateStr}`)
+                .then(res => res.json())
+                .then(data => {
+                    mealContentBox.innerHTML = '';
+                    if (data.mealServiceDietInfo) {
+                        let rawMenu = data.mealServiceDietInfo[1].row[0].DDISH_NM;
+                        let items = rawMenu.split('<br/>');
+                        let cleanList = [];
+
+                        items.forEach(item => {
+                            let cleanName = item.replace(/\([0-9.]+\)/g, '').trim();
+                            let allergyMatch = item.match(/\([0-9.]+\)/g);
+                            
+                            if (cleanName) {
+                                if (showAllergies && allergyMatch) {
+                                    cleanList.push(`<span class="font-medium text-slate-800">${cleanName}</span><span class="text-[9px] text-amber-500 font-bold ml-0.5">${allergyMatch[0]}</span>`);
+                                } else {
+                                    cleanList.push(`<span class="font-medium text-slate-800">${cleanName}</span>`);
+                                }
+                            }
+                        });
+
+                        mealContentBox.innerHTML = `
+                            <div class="text-xs text-center leading-relaxed text-slate-600 font-medium py-1">
+                                ${cleanList.join('<span class="text-slate-300 mx-1.5">|</span>')}
+                            </div>
+                        `;
+                    } else {
+                        mealContentBox.innerHTML = '<div class="text-center text-xs text-slate-400 font-medium">🍱 오늘은 급식 정보가 없습니다.</div>';
+                    }
+                })
+                .catch(() => {
+                    mealContentBox.innerHTML = '<div class="text-center text-xs text-rose-500 font-medium">❌ 급식 정보 로드 실패</div>';
+                });
+
+            // --- 2. 학년통합 가로 격자 시간표 연동 ---
+            let schType = "misTimetable"; 
+            let isElementary = false;
+            if (schoolInfo.schoolName.includes("초등학교")) {
+                schType = "elsTimetable";
+                isElementary = true;
+            } else if (schoolInfo.schoolName.includes("고등학교")) {
+                schType = "hisTimetable";
+            } else if (schoolInfo.schoolName.includes("특수학교")) {
+                schType = "aceTimetable";
+            }
+
+            const unifiedRowsContainer = document.getElementById('unified-timetable-rows');
+            unifiedRowsContainer.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center py-10 text-xs text-slate-400">
+                        <i class="fa-solid fa-spinner animate-spin text-lg block mb-2 text-blue-500"></i>
+                        학년별 데이터 로딩 중...
+                    </td>
+                </tr>
+            `;
+
+            // 1, 2, 3학년 각각 1교시부터 7교시까지의 주소 리스트 생성
+            const grades = [1, 2, 3];
+            let fetchPromises = [];
+
+            grades.forEach(grade => {
+                for(let p = 1; p <= 7; p++) {
+                    let pField = isElementary ? "PD" : "PERIO";
+                    let targetUrl = `${API_BASE_URL}/${schType}?Type=json&pIndex=1&pSize=10&ATPT_OFCDC_SC_CODE=${schoolInfo.officeCode}&SD_SCHUL_CODE=${schoolInfo.schoolCode}&ALL_TI_YMD=${dateStr}&GRADE=${grade}&${pField}=${p}&_ncache=${Math.random()}`;
+                    
+                    fetchPromises.push(
+                        fetch(targetUrl)
+                            .then(res => res.json())
+                            .then(json => ({ grade, period: p, data: json }))
+                            .catch(() => ({ grade, period: p, data: {} }))
+                    );
+                }
+            });
+
+            // 모든 비동기 개 개별 교시 통신 취합
+            Promise.all(fetchPromises).then(results => {
+                // 시간표 저장을 위한 데이터 마스크 생성
+                const matrix = {
+                    1: {1:'', 2:'', 3:'', 4:'', 5:'', 6:'', 7:''},
+                    2: {1:'', 2:'', 3:'', 4:'', 5:'', 6:'', 7:''},
+                    3: {1:'', 2:'', 3:'', 4:'', 5:'', 6:'', 7:''}
+                };
+
+                results.forEach(res => {
+                    const { grade, period, data } = res;
+                    let subjectName = "";
+
+                    if (data[schType] && data[schType][1]) {
+                        // 학급 필터링 공백 제거 탐지
+                        let rowItem = data[schType][1].row.find(r => {
+                            let cName = String(r.CLASS_NM || "").trim().replace(/[^0-9]/g, '');
+                            return cName === "1" || cName === "01";
+                        });
+                        if (rowItem) {
+                            subjectName = (rowItem.ITM_NM || rowItem.ITRT_CNTNT || "").trim();
+                        }
+                    }
+                    matrix[grade][period] = subjectName;
+                });
+
+                // 7교시 중 하나라도 과목이 등록된 최댓값을 추적하여 그 교시까지만 테이블을 동적 확장
+                let maxActivePeriod = 4; // 기본 4교시는 무조건 노출
+                for(let p = 7; p >= 1; p--) {
+                    if (matrix[1][p] || matrix[2][p] || matrix[3][p]) {
+                        maxActivePeriod = Math.max(p, 4);
+                        break;
+                    }
+                }
+
+                unifiedRowsContainer.innerHTML = '';
+                let rowsHtml = '';
+
+                for (let p = 1; p <= maxActivePeriod; p++) {
+                    // 과목 데이터가 없으면 깔끔한 하이픈(-) 기호 표시
+                    const g1 = matrix[1][p] || '<span class="text-slate-300 font-normal">-</span>';
+                    const g2 = matrix[2][p] || '<span class="text-slate-300 font-normal">-</span>';
+                    const g3 = matrix[3][p] || '<span class="text-slate-300 font-normal">-</span>';
+
+                    rowsHtml += `
+                        <tr class="hover:bg-slate-50/50 transition-all">
+                            <td class="py-3 text-center shrink-0">
+                                <span class="inline-block bg-blue-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm">${p}교시</span>
+                            </td>
+                            <td class="py-3 px-1 text-center text-xs font-bold text-slate-800 truncate max-w-[95px]" title="${matrix[1][p] || ''}">${g1}</td>
+                            <td class="py-3 px-1 text-center text-xs font-bold text-slate-800 truncate max-w-[95px]" title="${matrix[2][p] || ''}">${g2}</td>
+                            <td class="py-3 px-1 text-center text-xs font-bold text-slate-800 truncate max-w-[95px]" title="${matrix[3][p] || ''}">${g3}</td>
+                        </tr>
+                    `;
+                }
+
+                unifiedRowsContainer.innerHTML = rowsHtml;
+            }).catch(() => {
+                unifiedRowsContainer.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-10 text-xs text-rose-500 font-bold">
+                            ❌ 통합 시간표 로딩 실패
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function resetSchool() {
+            localStorage.removeItem('fixedSchool');
+            document.getElementById('search-input').value = '';
+            document.getElementById('search-results').innerHTML = '';
+            document.getElementById('setup-view').classList.remove('hidden');
+            document.getElementById('main-view').classList.add('hidden');
+            showToast('새로운 학교를 선택해 주세요!');
+        }
+    </script>
+</body>
+</html>
