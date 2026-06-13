@@ -26,7 +26,7 @@
     <!-- App Container (dvh 단위를 적용해 아이폰 사파리 하단바 가림 현상 완벽 방어) -->
     <div class="flex-1 flex flex-col max-w-md mx-auto w-full bg-white shadow-xl relative overflow-hidden min-h-[100dvh] h-[100dvh]">
         
-        <!-- ==================== 1단계: 학교 등록 화면 (키보드 대응 및 가로폭 고정 완료) ==================== -->
+        <!-- ==================== 1단계: 학교 등록 화면 ==================== -->
         <div id="setup-view" class="flex-1 flex flex-col justify-start p-6 bg-white overflow-y-auto custom-scrollbar pt-12 pb-8">
             <div class="text-center mb-8 shrink-0">
                 <div class="inline-flex items-center justify-center w-18 h-16 rounded-3xl bg-blue-800 text-white shadow-lg shadow-blue-100 mb-4">
@@ -42,10 +42,8 @@
             <div class="bg-slate-50 border border-slate-150 rounded-3xl p-5 shadow-sm space-y-3 shrink-0">
                 <label class="block text-slate-700 font-bold text-base">🏫 내 학교 검색</label>
                 <div class="flex gap-2 w-full overflow-hidden">
-                    <!-- min-w-0 w-full 및 text-base 설정으로 아이폰 사파리 전용 가로 고정 및 자동 줌 방지 -->
                     <input type="text" id="search-input" placeholder="학교 이름을 입력하세요 (예: 문평중)" 
                         class="flex-1 min-w-0 w-full bg-white border border-slate-200 rounded-2xl px-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-650 font-medium text-slate-800">
-                    <!-- shrink-0 설정으로 어떤 해상도에서도 버튼 크기 완전 고정 -->
                     <button onclick="searchSchool()" class="shrink-0 bg-blue-700 hover:bg-blue-800 text-white font-bold px-5 py-3.5 rounded-2xl text-base transition-all shadow-md shadow-blue-100">
                         검색
                     </button>
@@ -90,8 +88,8 @@
                 </button>
             </div>
 
-            <!-- 스크롤 가능한 메인 컨텐츠 영역 -->
-            <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar pb-12">
+            <!-- 스크롤 가능한 메인 컨텐츠 영역 (아이디 'dashboard-scroll-content' 부여) -->
+            <div id="dashboard-scroll-content" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar pb-12">
                 
                 <!-- 주말 메시지 -->
                 <div id="weekend-view" class="hidden bg-blue-50/50 border border-blue-100 rounded-3xl p-8 text-center">
@@ -418,6 +416,13 @@
             document.getElementById('setup-view').classList.add('hidden');
             document.getElementById('main-view').classList.remove('hidden');
             document.getElementById('school-name-display').innerText = schoolInfo.schoolName;
+
+            // [사파리 스크롤 리셋 핵심 비법] 
+            // 2단계 메인뷰가 열리는 순간, 스크롤 영역의 높이를 무조건 맨 위(0)로 강제 정렬합니다.
+            const scrollContainer = document.getElementById('dashboard-scroll-content');
+            if (scrollContainer) {
+                scrollContainer.scrollTop = 0;
+            }
 
             const dayOfWeek = currentSelectedDate.getDay();
             
