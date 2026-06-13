@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>온스쿨 (OnSchool) - 실시간 급식 & 시간표</title>
+    <title>온스쿨 (OnSchool) - 실시간 급식 & 시간표 & 학사일정</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -124,6 +124,15 @@
                         
                         <div id="meal-content-box" class="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex items-center justify-center">
                         </div>
+
+                        <!-- ✨ Gemini AI 분석: 급식 식단 분석 및 찰떡 디저트 매칭 -->
+                        <div id="ai-meal-analysis" class="mt-3.5 bg-blue-50/40 border border-blue-100/60 rounded-2xl p-3.5 relative overflow-hidden">
+                            <div class="flex items-center gap-1.5 mb-1.5">
+                                <i class="fa-solid fa-wand-magic-sparkles text-blue-600 text-xs animate-bounce"></i>
+                                <span class="text-[12px] font-bold text-blue-800">✨ AI 영양사 쌤의 꿀참견</span>
+                            </div>
+                            <p id="ai-meal-text" class="text-[13px] text-slate-650 leading-relaxed font-medium">급식 식단을 수집하면 영양소와 최강의 찰떡 디저트를 매칭해 줍니다...</p>
+                        </div>
                     </div>
 
                     <!-- 학년 통합 가로 정렬 대형 시간표 카드 -->
@@ -162,6 +171,41 @@
                             <button onclick="openTeacherModal()" class="text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 transition-all flex items-center gap-1.5 shadow-sm">
                                 <i class="fa-solid fa-user-pen text-xs"></i>과목별 담당 쌤 입력하기
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- 오늘의 학교 행사 (나이스 학사일정 실시간 연동 필드값 완벽 보정) -->
+                    <div id="schedule-card" class="hidden bg-white border border-slate-100 rounded-3xl p-5 shadow-sm animate-fade-in">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i class="fa-solid fa-calendar-check text-emerald-600 text-xl"></i>
+                            <h3 class="font-bold text-slate-800 text-lg">오늘의 학교 행사</h3>
+                        </div>
+                        <div id="schedule-content-box" class="bg-emerald-50/30 border border-emerald-100/65 rounded-2xl p-4 flex flex-col gap-2.5">
+                            <!-- 실시간으로 행사 데이터가 들어가는 공간 -->
+                        </div>
+
+                        <!-- ✨ Gemini AI 분석: 오늘 행사에 맞춘 힐링/격려 메세지 요약 -->
+                        <div id="ai-schedule-analysis" class="mt-3.5 bg-emerald-50/40 border border-emerald-100/60 rounded-2xl p-3.5">
+                            <div class="flex items-center gap-1.5 mb-1.5">
+                                <i class="fa-solid fa-sparkles text-emerald-600 text-xs animate-pulse"></i>
+                                <span class="text-[12px] font-bold text-emerald-800">✨ AI 오늘 하루 가이드</span>
+                            </div>
+                            <p id="ai-schedule-text" class="text-[13px] text-slate-650 leading-relaxed font-medium">행사 소식을 듣고 AI가 재미있게 오늘 하루를 준비하고 있습니다...</p>
+                        </div>
+                    </div>
+
+                    <!-- ✨ [신규] 오늘의 스마트 교실 아이디어 (아이들을 위한 교육 테마 추천) -->
+                    <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
+                        <div class="flex items-center justify-between mb-3.5">
+                            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                                <i class="fa-solid fa-seedling text-green-600 text-xl"></i> 창의 스마트 교실
+                            </h3>
+                            <button onclick="generateSmartFarmIdea()" class="text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-xl px-2.5 py-1.5 transition-all">
+                                <i class="fa-solid fa-rotate mr-1"></i>새로운 아이디어 ✨
+                            </button>
+                        </div>
+                        <div class="bg-gradient-to-br from-green-50/30 to-emerald-50/10 border border-emerald-100/40 rounded-2xl p-4">
+                            <p id="ai-smart-idea-text" class="text-[13.5px] font-medium text-slate-700 leading-relaxed">우측 버튼을 누르시면 Gemini AI가 스마트팜과 관련된 흥미진진한 교실 속 코딩/메이커 활동 아이디어를 뿜어냅니다!</p>
                         </div>
                     </div>
 
@@ -228,6 +272,9 @@
         
         // 시간표 매트릭스 백업 (선생님 입력 창 활성화용)
         let currentSubjectsSet = new Set();
+        
+        // Gemini API 연동 관련 (공백 스트링 기본값 설정 및 runtime 인젝션 지원)
+        const apiKey = ""; 
 
         // 고정 데이터 기반 오늘의 명언 목록
         const quotes = [
@@ -348,6 +395,7 @@
             showToast('우리 학교가 성공적으로 등록되었습니다!');
         }
 
+        // 특정 날짜 전후 이동 함수
         function changeDate(days) {
             currentSelectedDate.setDate(currentSelectedDate.getDate() + days);
             updateDateAndWeekdayDisplay();
@@ -355,6 +403,7 @@
             if (savedSchool) showMainView(JSON.parse(savedSchool));
         }
 
+        // 인풋 날짜 직접 입력 변경 핸들러
         function onDateChanged() {
             const selectedVal = document.getElementById('target-date').value;
             if (selectedVal) {
@@ -445,6 +494,85 @@
             }
         };
 
+        // ==================== ✨ Gemini API 연동 코어 엔진 (지수 백오프 RETRY 기능 포함) ====================
+        async function callGeminiAPI(systemInstruction, userPrompt) {
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] }
+            };
+
+            let delay = 1000;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) {
+                        const json = await response.json();
+                        return json.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                    }
+                } catch (err) {
+                    // console retries logging omitted per instruction guardrails
+                }
+                // 지수 백오프
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+            }
+            throw new Error("Gemini API 호출에 실패했습니다.");
+        }
+
+        // ✨ 급식 메뉴 Gemini 분석 요청 함수
+        function analyzeMealWithAI(mealString) {
+            const displayBox = document.getElementById('ai-meal-text');
+            displayBox.innerHTML = `<i class="fa-solid fa-spinner animate-spin text-blue-600 mr-1.5"></i> 인공지능이 영양 구성과 디저트 꿀매칭을 고민 중입니다...`;
+
+            const systemPrompt = "너는 친절하고 위트 있는 학교 영양사 선생님이다. 초등학생, 중학생, 고등학생 아이들에게 친근하게 말을 걸며, 오늘 급식 리스트를 보고 다음 내용을 한국어 2줄 이내로 깜찍하고 유익하게 격려하듯 요약하라: 1. 식단의 영양소 특성 한 줄 평 2. 이 식단과 환상의 조합을 이룰 추천 디저트나 간식 한 가지 제안 (이모지를 풍부하게 사용해라)";
+            
+            callGeminiAPI(systemPrompt, `오늘의 급식 메뉴: ${mealString}`)
+                .then(text => {
+                    displayBox.innerText = text;
+                })
+                .catch(() => {
+                    displayBox.innerText = "💡 오늘 급식에는 비타민과 활력이 가득해요! 영양 균형이 아주 좋습니다. 행복한 점심시간 되세요!";
+                });
+        }
+
+        // ✨ 학사일정 Gemini 분석 요청 함수
+        function analyzeScheduleWithAI(scheduleString) {
+            const displayBox = document.getElementById('ai-schedule-text');
+            displayBox.innerHTML = `<i class="fa-solid fa-spinner animate-spin text-emerald-600 mr-1.5"></i> 인공지능이 오늘 하루 행사의 테마를 감지하는 중...`;
+
+            const systemPrompt = "너는 학생들의 활기찬 하루를 응원하는 인공지능 교장선생님이다. 오늘 학교의 공식 학사일정이나 행사 목록을 전달받고, 학생들이 오늘 하루를 행복하고 의미있게 보낼 수 있도록 따뜻하고 유쾌한 한마디와 행동 팁을 한국어 2줄 이내로 작성하라. (풍부한 이모지 사용)";
+            
+            callGeminiAPI(systemPrompt, `오늘의 학교 공식 일정: ${scheduleString}`)
+                .then(text => {
+                    displayBox.innerText = text;
+                })
+                .catch(() => {
+                    displayBox.innerText = "💡 특별한 행사가 없어도 오늘은 차분하게 학업에 집중하고 친구들과 돈독한 우정을 나누기 가장 완벽한 평화로운 날입니다!";
+                });
+        }
+
+        // ✨ 스마트 교실 / 스마트팜 아이디어 생성기
+        function generateSmartFarmIdea() {
+            const displayBox = document.getElementById('ai-smart-idea-text');
+            displayBox.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles animate-spin text-green-600 mr-1.5"></i> Gemini AI가 스마트 센서 및 스마트팜 교과 연계 아이디어를 조합하는 중...`;
+
+            const systemPrompt = "너는 중고등학교 스마트팜 및 IT 메이커 교육 전문가이다. 시간표와 학사일정을 연동할 수 있는 교내 '스마트팜 메이커 활동'이나 '창의적 교실 코딩 아이디어' 한 가지를 학생과 선생님이 바로 써먹을 수 있도록 한국어 3줄 이내로 매우 재미있고 신선하게 제안하라. (이모지 활용 및 구체적인 센서나 소프트웨어 아이디어 1개 언급 필수)";
+            const userPrompt = "중고등학교 교실에서 학생들과 아두이노, 라즈베리파이, 마이크로비트 혹은 미니 온실을 활용해 당장 실습해 볼 수 있는 참신한 스마트팜 창의 융합 과학 활동 아이디어를 하나 제안해줘.";
+
+            callGeminiAPI(systemPrompt, userPrompt)
+                .then(text => {
+                    displayBox.innerText = text;
+                })
+                .catch(() => {
+                    displayBox.innerText = "🌱 [온실 토양 습도 경보기] 마이크로비트와 토양 수분 센서를 활용하여 식물이 물이 고플 때 귀여운 슬픈 표정의 LED와 경보음을 울려주는 친환경 메이커 아이디어를 시도해 보세요!";
+                });
+        }
+
         function showMainView(schoolInfo) {
             document.getElementById('setup-view').classList.add('hidden');
             document.getElementById('main-view').classList.remove('hidden');
@@ -488,12 +616,14 @@
                         let rawMenu = data.mealServiceDietInfo[1].row[0].DDISH_NM;
                         let items = rawMenu.split('<br/>');
                         let cleanList = [];
+                        let pureMenuArray = [];
 
                         items.forEach(item => {
                             let cleanName = item.replace(/\([0-9.]+\)/g, '').trim();
                             let allergyMatch = item.match(/\([0-9.]+\)/g);
                             
                             if (cleanName) {
+                                pureMenuArray.push(cleanName);
                                 if (showAllergies && allergyMatch) {
                                     cleanList.push(`<span class="font-medium text-slate-700 text-[15px]">${cleanName}</span><span class="text-[10px] text-blue-600 font-bold ml-0.5">${allergyMatch[0]}</span>`);
                                 } else {
@@ -507,8 +637,12 @@
                                 ${cleanList.join('<span class="text-slate-300 mx-2 font-normal">|</span>')}
                             </div>
                         `;
+
+                        // ✨ Gemini AI 급식 실시간 참견 호출
+                        analyzeMealWithAI(pureMenuArray.join(', '));
                     } else {
                         mealContentBox.innerHTML = '<div class="text-center text-sm text-slate-400 font-medium py-4">🍱 오늘은 급식 정보가 없습니다.</div>';
+                        document.getElementById('ai-meal-text').innerText = "💡 오늘은 식단이 없는 평화로운 날이네요! 집밥이나 맛있는 다른 특식을 기대해 봐요!";
                     }
                 })
                 .catch(() => {
@@ -577,9 +711,12 @@
                 });
 
                 let maxActivePeriod = 4; 
+                let hasAnyData = false; // 하루 시간표 중 과목이 하나라도 있는지 체크하는 플래그
+                
                 for(let p = 7; p >= 1; p--) {
                     if (matrix[1][p] || matrix[2][p] || matrix[3][p]) {
                         maxActivePeriod = Math.max(p, 4);
+                        hasAnyData = true;
                         break;
                     }
                 }
@@ -588,60 +725,145 @@
                 const savedMapping = JSON.parse(localStorage.getItem('teacherMapping') || '{}');
 
                 unifiedRowsContainer.innerHTML = '';
-                let rowsHtml = '';
-
-                for (let p = 1; p <= maxActivePeriod; p++) {
-                    const makeSubjectDisplay = (subj) => {
-                        if (!subj) return '<span class="text-slate-300 font-normal">-</span>';
-                        
-                        const teacher = savedMapping[subj];
-                        
-                        // 쌤이 지정된 경우: 과목 우측 상단에 파란색 알림 도트를 제거하고, 아래에 파란색 글씨로만 깔끔하게 성함 얹기
-                        if (teacher) {
-                            return `
-                                <div onclick="showTeacherTooltip('${subj}')" class="relative inline-flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-transform w-full">
-                                    <div class="relative inline-block font-medium text-slate-700 text-[15px] leading-tight">
-                                        ${subj}
-                                    </div>
-                                    <!-- 쌤 이름은 산만하지 않게 파란색(text-blue-600)으로 부드럽고 명확하게 출력 -->
-                                    <span class="text-[11px] text-blue-600 font-bold leading-none mt-1">${teacher} 쌤</span>
-                                </div>
-                            `;
-                        }
-                        
-                        return `
-                            <div onclick="showTeacherTooltip('${subj}')" class="cursor-pointer active:scale-95 transition-transform w-full text-[15px] text-slate-700 font-medium">
-                                ${subj}
-                            </div>
-                        `;
-                    };
-
-                    const g1 = makeSubjectDisplay(matrix[1][p]);
-                    const g2 = makeSubjectDisplay(matrix[2][p]);
-                    const g3 = makeSubjectDisplay(matrix[3][p]);
-
-                    rowsHtml += `
-                        <tr class="hover:bg-blue-50/30 transition-all">
-                            <td class="py-3 text-center shrink-0">
-                                <span class="inline-block bg-blue-700 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow-sm">${p}교시</span>
+                
+                // 만약 7월 3일 이후처럼 모든 학년의 모든 교시가 싹 비어있다면, 안내 문구를 시원하게 띄워줍니다!
+                if (!hasAnyData) {
+                    unifiedRowsContainer.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center py-12 px-4 text-xs text-slate-400 font-medium">
+                                <i class="fa-solid fa-calendar-minus text-2xl text-slate-300 block mb-2.5"></i>
+                                🏫 아직 등록된 시간표 데이터가 없는 날입니다.<br>
+                                <span class="text-[10px] text-slate-400 font-normal mt-1 block">(기말고사 준비 기간, 방학식 등 학교의 나이스 미등록 기간)</span>
                             </td>
-                            <td class="py-3 px-1 text-center truncate max-w-[95px]">${g1}</td>
-                            <td class="py-3 px-1 text-center truncate max-w-[95px]">${g2}</td>
-                            <td class="py-3 px-1 text-center truncate max-w-[95px]">${g3}</td>
                         </tr>
                     `;
-                }
+                } else {
+                    let rowsHtml = '';
+                    for (let p = 1; p <= maxActivePeriod; p++) {
+                        const makeSubjectDisplay = (subj) => {
+                            if (!subj) return '<span class="text-slate-300 font-normal">-</span>';
+                            
+                            const teacher = savedMapping[subj];
+                            
+                            // 쌤이 지정된 경우: 과목 우측 상단에 파란색 알림 도트를 제거하고, 아래에 파란색 글씨로만 깔끔하게 성함 얹기
+                            if (teacher) {
+                                return `
+                                    <div onclick="showTeacherTooltip('${subj}')" class="relative inline-flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-transform w-full">
+                                        <div class="relative inline-block font-medium text-slate-700 text-[15px] leading-tight">
+                                            ${subj}
+                                        </div>
+                                        <!-- 쌤 이름은 산만하지 않게 파란색(text-blue-600)으로 부드럽고 명확하게 출력 -->
+                                        <span class="text-[11px] text-blue-600 font-bold leading-none mt-1">${teacher} 쌤</span>
+                                    </div>
+                                `;
+                            }
+                            
+                            return `
+                                <div onclick="showTeacherTooltip('${subj}')" class="cursor-pointer active:scale-95 transition-transform w-full text-[15px] text-slate-700 font-medium">
+                                    ${subj}
+                                </div>
+                            `;
+                        };
 
-                unifiedRowsContainer.innerHTML = rowsHtml;
+                        const g1 = makeSubjectDisplay(matrix[1][p]);
+                        const g2 = makeSubjectDisplay(matrix[2][p]);
+                        const g3 = makeSubjectDisplay(matrix[3][p]);
+
+                        rowsHtml += `
+                            <tr class="hover:bg-blue-50/30 transition-all">
+                                <td class="py-3 text-center shrink-0">
+                                    <span class="inline-block bg-blue-700 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow-sm">${p}교시</span>
+                                </td>
+                                <td class="py-3 px-1 text-center truncate max-w-[95px]">${g1}</td>
+                                <td class="py-3 px-1 text-center truncate max-w-[95px]">${g2}</td>
+                                <td class="py-3 px-1 text-center truncate max-w-[95px]">${g3}</td>
+                            </tr>
+                        `;
+                    }
+                    unifiedRowsContainer.innerHTML = rowsHtml;
+                }
             }).catch(() => {
                 unifiedRowsContainer.innerHTML = `
                     <tr>
                         <td colspan="4" class="text-center py-10 text-sm text-rose-500 font-bold">
-                            ❌ 통합 시간표 로딩 실패
+                            ❌ 시간표 로딩 중 예상치 못한 오류 발생
                         </td>
                     </tr>
                 `;
             });
+
+            // --- 3. [완벽 복구] 실시간 학교 행사 학사일정 로드 ---
+            const scheduleCard = document.getElementById('schedule-card');
+            const scheduleContentBox = document.getElementById('schedule-content-box');
+            
+            // 초기 비우기 및 로딩 설정
+            scheduleCard.classList.add('hidden');
+            scheduleContentBox.innerHTML = '';
+
+            fetch(`${API_BASE_URL}/SchoolSchedule?Type=json&pIndex=1&pSize=10&ATPT_OFCDC_SC_CODE=${schoolInfo.officeCode}&SD_SCHUL_CODE=${schoolInfo.schoolCode}&AA_YMD=${dateStr}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.SchoolSchedule && data.SchoolSchedule[1]) {
+                        const rows = data.SchoolSchedule[1].row;
+                        let scheduleItems = [];
+
+                        rows.forEach(item => {
+                            // [정밀 타격 수정] 실제 나이스 학사일정 API의 행사명 컬럼은 'EVENT_NM' 입니다!
+                            const eventName = (item.EVENT_NM || "").trim();
+                            
+                            // 불필요한 토요휴업일 및 주말 정보 필터링
+                            if (eventName && !eventName.includes("토요휴업일") && !eventName.includes("일요일")) {
+                                // 학년 대상 필드값 분석 (예: Y가 포함된 경우 학년 꼬리표 붙이기)
+                                let targetGradeText = "";
+                                if (item.ONE_GRADE_EVENT_YN === "Y" && item.TWO_GRADE_EVENT_YN === "Y" && item.THREE_GRADE_EVENT_YN === "Y") {
+                                    targetGradeText = "전학년";
+                                } else {
+                                    let targets = [];
+                                    if (item.ONE_GRADE_EVENT_YN === "Y") targets.push("1학년");
+                                    if (item.TWO_GRADE_EVENT_YN === "Y") targets.push("2학년");
+                                    if (item.THREE_GRADE_EVENT_YN === "Y") targets.push("3학년");
+                                    targetGradeText = targets.join(", ");
+                                }
+                                
+                                scheduleItems.push({
+                                    name: eventName,
+                                    grade: targetGradeText
+                                });
+                            }
+                        });
+
+                        if (scheduleItems.length > 0) {
+                            scheduleCard.classList.remove('hidden'); // 행사 카드를 당당하게 노출!
+                            
+                            let html = '';
+                            let scheduleTextForAI = [];
+                            scheduleItems.forEach(item => {
+                                scheduleTextForAI.push(item.name);
+                                const gradeBadge = item.grade ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded-md ml-1.5">${item.grade}</span>` : '';
+                                html += `
+                                    <div class="flex items-center justify-between py-0.5 border-b border-emerald-100/30 last:border-b-0">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                                            <span class="text-[14px] font-bold text-emerald-950">${item.name}</span>
+                                            ${gradeBadge}
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            scheduleContentBox.innerHTML = html;
+
+                            // ✨ Gemini AI 학교행사 기반 일별 가이드 요약 실행
+                            analyzeScheduleWithAI(scheduleTextForAI.join(', '));
+                        }
+                    }
+                })
+                .catch(() => {
+                    // 오류 시 화면 안 깨지게 깔끔히 숨김
+                    scheduleCard.classList.add('hidden');
+                });
+
+            // 창의 스마트 교실 AI 아이디어 첫 로딩 시 자동 1회 채우기
+            generateSmartFarmIdea();
         }
 
         function resetSchool() {
