@@ -99,20 +99,20 @@
                 </button>
             </header>
 
-            <!-- 날짜 선택 네비게이터 (시원하게 큰 글씨 복구 및 엣지 클릭 버그 완벽 해결) -->
+            <!-- 날짜 선택 네비게이터 -->
             <div class="bg-white px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0 shadow-sm sticky top-[73px] z-30">
                 <button onclick="changeDate(-1)" class="w-11 h-11 rounded-2xl hover:bg-slate-50 active:scale-90 flex items-center justify-center text-blue-700 text-lg font-bold transition-all border border-slate-100">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
                 
-                <!-- 날짜 선택 달력 영역 (마우스/터치 무반응 오류 완벽 우회 완료) -->
+                <!-- 날짜 선택 달력 영역 -->
                 <div class="relative flex items-center justify-center w-[210px] h-[48px]">
                     <!-- 1. 눈에 보이며 반응이 끝내주는 예쁜 날짜 버튼 디자인 -->
                     <div class="absolute inset-0 font-bold text-slate-800 text-[18px] flex items-center justify-center gap-2 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm select-none z-10 pointer-events-none">
                         <i class="fa-solid fa-calendar-days text-blue-700 text-base"></i>
                         <span id="date-display-text">오늘 날짜 로딩 중...</span>
                     </div>
-                    <!-- 2. 실제 버튼 전체 크기로 확장된 투명한 진짜 날짜 인풋 (마법의 CSS 클래스 적용 완료!) -->
+                    <!-- 2. 실제 버튼 전체 크기로 확장된 투명한 진짜 날짜 인풋 -->
                     <input type="date" id="target-date" onchange="onDateChanged()" 
                         class="magic-date-input">
                 </div>
@@ -143,7 +143,7 @@
                         </div>
                     </div>
 
-                    <!-- 오늘의 점심 급식 카드 (큼직하고 부드러운 가독성 최적화 완료) -->
+                    <!-- 오늘의 점심 급식 카드 -->
                     <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
@@ -157,7 +157,7 @@
                         </div>
                     </div>
 
-                    <!-- 학년 통합 가로 정렬 대형 시간표 카드 (큰 글씨 16px에 유려한 중간 두께 튜닝 완료) -->
+                    <!-- 학년 통합 가로 정렬 대형 시간표 카드 -->
                     <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-sm">
                         <div class="mb-4 border-b border-slate-100 pb-3">
                             <h3 class="font-bold text-slate-800 text-lg flex items-center gap-1.5">
@@ -473,6 +473,16 @@
                 showToast(`💡 ${subjectName} 담당 쌤을 등록해 보세요!`);
             }
         };
+
+        // 🧙‍♂️ 학교 변경 시 브라우저 보안 에러를 피하기 위해 safeStorage를 활용하도록 개조 완료
+        function resetSchool() {
+            safeStorage.removeItem('fixedSchool');
+            document.getElementById('search-input').value = '';
+            document.getElementById('search-results').innerHTML = '';
+            document.getElementById('setup-view').classList.remove('hidden');
+            document.getElementById('main-view').classList.add('hidden');
+            showToast('새로운 학교를 선택해 주세요!');
+        }
 
         function showMainView(schoolInfo) {
             document.getElementById('setup-view').classList.add('hidden');
