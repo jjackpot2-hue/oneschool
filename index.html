@@ -1,6 +1,5 @@
 <script>
     const API_BASE_URL = 'https://open.neis.go.kr/hub';
-    // 필요 시 개인 나이스 API KEY를 할당할 수 있습니다 (기본 호출도 지원)
     const API_KEY = ''; 
 
     // 안전한 LocalStorage 접근
@@ -12,7 +11,7 @@
 
     // 학교 검색
     function searchSchool() {
-        const query = document.getElementById('search-input').value.trim();
+        const query = document.getElementById('search-input')?.value.trim();
         const resultsContainer = document.getElementById('search-results');
         
         if (!query) {
@@ -20,13 +19,16 @@
             return;
         }
 
-        resultsContainer.innerHTML = '<p class="text-center text-sm text-slate-400 py-4">검색 중...</p>';
+        if (resultsContainer) {
+            resultsContainer.innerHTML = '<p class="text-center text-sm text-slate-400 py-4">검색 중...</p>';
+        }
 
         fetch(`${API_BASE_URL}/schoolInfo?Type=json&SCHUL_NM=${encodeURIComponent(query)}`)
             .then(res => res.json())
             .then(data => {
+                if (!resultsContainer) return;
                 resultsContainer.innerHTML = '';
-                if (data.schoolInfo && data.schoolInfo[1]) {
+                if (data && data.schoolInfo && data.schoolInfo[1]) {
                     const schools = data.schoolInfo[1].row;
                     schools.forEach(school => {
                         const btn = document.createElement('button');
@@ -48,7 +50,9 @@
                 }
             })
             .catch(() => {
-                resultsContainer.innerHTML = '<p class="text-center text-sm text-red-400 py-4">학교 정보를 가져오는 중 오류가 발생했습니다.</p>';
+                if (resultsContainer) {
+                    resultsContainer.innerHTML = '<p class="text-center text-sm text-red-400 py-4">학교 정보를 가져오는 중 오류가 발생했습니다.</p>';
+                }
             });
     }
 
@@ -59,38 +63,36 @@
 
     function initApp() {
         const savedSchool = safeStorage.getItem('fixedSchool');
+        const setupView = document.getElementById('setup-view');
+        const mainView = document.getElementById('main-view');
+
         if (savedSchool) {
             const schoolInfo = JSON.parse(savedSchool);
-            document.getElementById('setup-view').classList.add('hidden');
-            document.getElementById('main-view').classList.remove('hidden');
+            if (setupView) setupView.classList.add('hidden');
+            if (mainView) mainView.classList.remove('hidden');
             
-            // 오늘 날짜 기본 설정 (YYYYMMDD)
+            // 오늘 날짜 설정 (YYYYMMDD)
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             const dateStr = `${year}${month}${day}`;
 
-            // 데이터 로드
+            // 데이터 일괄 로드
             loadAllData(schoolInfo, dateStr);
         } else {
-            document.getElementById('setup-view').classList.remove('hidden');
-            document.getElementById('main-view').classList.add('hidden');
+            if (setupView) setupView.classList.remove('hidden');
+            if (mainView) mainView.classList.add('hidden');
         }
     }
 
     function loadAllData(schoolInfo, dateStr) {
-        // 1. 학사 일정 불러오기
         loadSchedule(schoolInfo, dateStr);
-        
-        // 2. 급식 정보 불러오기
         loadMeal(schoolInfo, dateStr);
-
-        // 3. 시간표 정보 불러오기
         loadTimetable(schoolInfo, dateStr);
     }
 
-    // --- 학사 일정 API ---
+    // --- 1. 학사 일정 API ---
     function loadSchedule(schoolInfo, dateStr) {
         const scheduleCard = document.getElementById('schedule-card');
         const scheduleBox = document.getElementById('schedule-content-box');
@@ -98,17 +100,19 @@
         fetch(`${API_BASE_URL}/SchoolSchedule?Type=json&ATPT_OFCDC_SC_CODE=${schoolInfo.officeCode}&SD_SCHUL_CODE=${schoolInfo.schoolCode}&AA_YMD=${dateStr}`)
             .then(res => res.json())
             .then(data => {
-                if (data.SchoolSchedule && data.SchoolSchedule[1]) {
+                if (data && data.SchoolSchedule && data.SchoolSchedule[1] && data.SchoolSchedule[1].row) {
                     const events = data.SchoolSchedule[1].row;
-                    scheduleBox.innerHTML = '';
-                    events.forEach(event => {
-                        scheduleBox.innerHTML += `
-                            <div class="flex items-center gap-2">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                <span class="font-semibold text-slate-800 text-[15px]">${event.EVENT_NM}</span>
-                            </div>
-                        `;
-                    });
+                    if (scheduleBox) {
+                        scheduleBox.innerHTML = '';
+                        events.forEach(event => {
+                            scheduleBox.innerHTML += `
+                                <div class="flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                    <span class="font-semibold text-slate-800 text-[15px]">${event.EVENT_NM}</span>
+                                </div>
+                            `;
+                        });
+                    }
                     if (scheduleCard) scheduleCard.classList.remove('hidden');
                 } else {
                     if (scheduleCard) scheduleCard.classList.add('hidden');
@@ -119,21 +123,20 @@
             });
     }
 
-    // --- 급식 API ---
+    // --- 2. 급식 API ---
     function loadMeal(schoolInfo, dateStr) {
         const mealBox = document.getElementById('meal-content-box');
-        if (!mealBox) return;
+        if (!mealBox) return; // 화면에 급식 상자가 없으면 안전하게 건너뜀
 
-        mealBox.innerHTML = '<p class="text-sm text-slate-400">급식 정보를 불러오는 중...</p>';
+        mealBox.innerHTML = '<p class="text-sm text-slate-400 py-2">급식 정보를 불러오는 중...</p>';
 
         fetch(`${API_BASE_URL}/MealServiceDietInfo?Type=json&ATPT_OFCDC_SC_CODE=${schoolInfo.officeCode}&SD_SCHUL_CODE=${schoolInfo.schoolCode}&MLSV_YMD=${dateStr}`)
             .then(res => res.json())
             .then(data => {
-                if (data.MealServiceDietInfo && data.MealServiceDietInfo[1]) {
+                if (data && data.MealServiceDietInfo && data.MealServiceDietInfo[1] && data.MealServiceDietInfo[1].row) {
                     const mealData = data.MealServiceDietInfo[1].row[0];
-                    // 알레르기 원산지 수식어 제거 및 깔끔한 출력 처리
-                    const cleanMenu = mealData.DDISH_NM
-                        .replace(/\([0-9\.]+\)/g, '') // 알레르기 번호 제거
+                    const cleanMenu = (mealData.DDISH_NM || '')
+                        .replace(/\([0-9\.]+\)/g, '')
                         .split('<br/>')
                         .map(item => item.trim())
                         .filter(item => item.length > 0)
@@ -141,28 +144,27 @@
 
                     mealBox.innerHTML = `
                         <div class="text-slate-700 text-[15px] leading-relaxed font-medium">
-                            ${cleanMenu}
+                            ${cleanMenu || '등록된 메뉴가 없습니다.'}
                         </div>
                         <div class="text-xs text-slate-400 mt-2">
                             🔥 칼로리: ${mealData.CAL_INFO || '정보 없음'}
                         </div>
                     `;
                 } else {
-                    mealBox.innerHTML = '<p class="text-sm text-slate-400">🍱 등록된 급식 식단이 없습니다. (휴업일/방학 등)</p>';
+                    mealBox.innerHTML = '<p class="text-sm text-slate-400 py-2">🍱 등록된 급식 식단이 없습니다.</p>';
                 }
             })
             .catch(() => {
-                mealBox.innerHTML = '<p class="text-sm text-slate-400">⚠️ 급식 정보를 불러오지 못했습니다.</p>';
+                mealBox.innerHTML = '<p class="text-sm text-slate-400 py-2">⚠️ 급식 정보를 불러오지 못했습니다.</p>';
             });
     }
 
-    // --- 시간표 API (초/중/고 자동 분기) ---
+    // --- 3. 시간표 API ---
     function loadTimetable(schoolInfo, dateStr) {
-        const unifiedRowsContainer = document.getElementById('unified-rows'); // 본인의 시간표 tbody ID 확인
+        const unifiedRowsContainer = document.getElementById('unified-rows');
         if (!unifiedRowsContainer) return;
 
-        // 학교 종류에 맞게 나이스 시간표 엔드포인트 선택
-        let endpoint = 'hisTimetable'; // 기본값: 고등학교
+        let endpoint = 'hisTimetable';
         if (schoolInfo.kind === '중학교') endpoint = 'misTimetable';
         else if (schoolInfo.kind === '초등학교') endpoint = 'elsTimetable';
 
@@ -172,7 +174,8 @@
                 const matrix = { 1: {}, 2: {}, 3: {} };
                 let hasAnyData = false;
 
-                if (data[endpoint] && data[endpoint][1]) {
+                // 데이터가 존재하는지 3중 검사로 에러 방지
+                if (data && data[endpoint] && data[endpoint][1] && data[endpoint][1].row) {
                     const rows = data[endpoint][1].row;
                     rows.forEach(rowItem => {
                         const grade = parseInt(rowItem.GRADE);
@@ -225,7 +228,7 @@
                     unifiedRowsContainer.innerHTML = `
                         <tr>
                             <td colspan="4" class="text-center py-8 text-sm text-slate-400 font-medium">
-                                📅 조회된 시간표가 없습니다. (등록 전이거나 휴업일/주말입니다)
+                                📅 조회된 시간표가 없습니다. (휴업일/주말이거나 아직 등록 전입니다)
                             </td>
                         </tr>
                     `;
@@ -244,12 +247,17 @@
 
     function resetSchool() {
         safeStorage.removeItem('fixedSchool');
-        document.getElementById('main-view').classList.add('hidden');
-        document.getElementById('setup-view').classList.remove('hidden');
-        document.getElementById('search-input').value = '';
-        document.getElementById('search-results').innerHTML = '';
+        const mainView = document.getElementById('main-view');
+        const setupView = document.getElementById('setup-view');
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+
+        if (mainView) mainView.classList.add('hidden');
+        if (setupView) setupView.classList.remove('hidden');
+        if (searchInput) searchInput.value = '';
+        if (searchResults) searchResults.innerHTML = '';
     }
 
-    // 페이지 시작 로드
+    // 페이지 로드 시 앱 초기화
     document.addEventListener('DOMContentLoaded', initApp);
 </script>
