@@ -1,263 +1,157 @@
-<script>
-    const API_BASE_URL = 'https://open.neis.go.kr/hub';
-    const API_KEY = ''; 
+import sys
+import requests
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
+    QLineEdit, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QTabWidget
+)
 
-    // 안전한 LocalStorage 접근
-    const safeStorage = {
-        getItem: (key) => { try { return localStorage.getItem(key); } catch (e) { return null; } },
-        setItem: (key, val) => { try { localStorage.setItem(key, val); } catch (e) {} },
-        removeItem: (key) => { try { localStorage.removeItem(key); } catch (e) {} }
-    };
+class OnSchoolApp(QWidget):
+    def __init__(self):
+        super().__init__()
+        # 나이스 인증키 (테스트용 공공 API Key 또는 발급받은 KEY 입력)
+        self.api_key = "sample"  # 필요 시 발급받은 나이스 API 키로 변경하세요
+        self.initUI()
 
-    // 학교 검색
-    function searchSchool() {
-        const query = document.getElementById('search-input')?.value.trim();
-        const resultsContainer = document.getElementById('search-results');
+    def initUI(self):
+        self.setWindowTitle('온스쿨 시간표 & 급식 조회 어플')
+        self.resize(600, 500)
+
+        main_layout = QVBoxLayout()
+
+        # 1. 학교 검색 영역
+        search_layout = QHBoxLayout()
+        self.school_input = QLineEdit()
+        self.school_input.setPlaceholderText("학교명을 입력하세요 (예: 초등학교, 중학교)")
+        self.search_btn = QPushButton("학교 검색")
+        self.search_btn.clicked.connect(self.search_school)
         
-        if (!query) {
-            alert('학교명을 입력해주세요.');
-            return;
+        search_layout.addWidget(self.school_input)
+        search_layout.addWidget(self.search_btn)
+        main_layout.addLayout(search_layout)
+
+        # 학교 선택 정보 레이블
+        self.info_label = QLabel("학교를 검색하여 선택해주세요.")
+        main_layout.addWidget(self.info_label)
+
+        # 탭 구성 (시간표 / 급식)
+        self.tabs = QTabWidget()
+        
+        # 시간표 탭
+        self.timetable_table = QTableWidget()
+        self.tabs.addTab(self.timetable_table, "시간표")
+        
+        # 급식 탭
+        self.meal_table = QTableWidget()
+        self.tabs.addTab(self.meal_table, "오늘의 급식")
+
+        main_layout.addWidget(self.tabs)
+        self.setLayout(main_layout)
+
+        # 학교 정보를 저장할 변수
+        self.atpt_ofcdc_sc_code = ""
+        self.sd_sched_dep_code = ""
+
+    def search_school(self):
+        school_name = self.school_input.text().strip()
+        if not school_name:
+            QMessageBox.warning(self, "경고", "학교명을 입력해주세요.")
+            return
+
+        url = "https://open.neis.go.kr/hub/schoolInfo"
+        params = {
+            'KEY': self.api_key,
+            'Type': 'json',
+            'pIndex': 1,
+            'pSize': 5,
+            'SCHUL_NM': school_name
         }
 
-        if (resultsContainer) {
-            resultsContainer.innerHTML = '<p class="text-center text-sm text-slate-400 py-4">검색 중...</p>';
+        try:
+            res = requests.get(url, params=params, timeout=5)
+            data = res.json()
+
+            if 'schoolInfo' in data:
+                info = data['schoolInfo'][1]['row'][0]
+                self.atpt_ofcdc_sc_code = info['ATPT_OFCDC_SC_CODE'] # 시도교육청코드
+                self.sd_sched_dep_code = info['SD_SCHUL_CODE']      # 행정표준코드
+                school_full_name = info['SCHUL_NM']
+
+                self.info_label.setText(f"선택된 학교: {school_full_name}")
+                
+                # 데이터 불러오기
+                self.load_timetable()
+                self.load_meal()
+            else:
+                QMessageBox.warning(self, "알림", "검색된 학교가 없습니다.")
+        except Exception as e:
+            QMessageBox.critical(self, "오류", f"학교 정보를 불러오는 중 오류가 발생했습니다:\n{e}")
+
+    def load_timetable(self):
+        # 초등학교/중학교/고등학교 API 엔드포인트 자동 분기 처리 가능 (기본: 초등/중등)
+        url = "https://open.neis.go.kr/hub/hisTimetable" # 고등: hisTimetable / 중등: misTimetable / 초등: elsTimetable
+        params = {
+            'KEY': self.api_key,
+            'Type': 'json',
+            'ATPT_OFCDC_SC_CODE': self.atpt_ofcdc_sc_code,
+            'SD_SCHUL_CODE': self.sd_sched_dep_code,
+            'pIndex': 1,
+            'pSize': 20
         }
 
-        fetch(`${API_BASE_URL}/schoolInfo?Type=json&SCHUL_NM=${encodeURIComponent(query)}`)
-            .then(res => res.json())
-            .then(data => {
-                if (!resultsContainer) return;
-                resultsContainer.innerHTML = '';
-                if (data && data.schoolInfo && data.schoolInfo[1]) {
-                    const schools = data.schoolInfo[1].row;
-                    schools.forEach(school => {
-                        const btn = document.createElement('button');
-                        btn.className = 'w-full text-left p-3 rounded-lg hover:bg-blue-50 border border-slate-100 transition-colors mb-2';
-                        btn.innerHTML = `
-                            <div class="font-bold text-slate-800">${school.SCHUL_NM}</div>
-                            <div class="text-xs text-slate-400 mt-0.5">${school.LCTN_SC_NM} | ${school.SCHUL_KND_SC_NM}</div>
-                        `;
-                        btn.onclick = () => selectSchool({
-                            name: school.SCHUL_NM,
-                            officeCode: school.ATPT_OFCDC_SC_CODE,
-                            schoolCode: school.SD_SCHUL_CODE,
-                            kind: school.SCHUL_KND_SC_NM
-                        });
-                        resultsContainer.appendChild(btn);
-                    });
-                } else {
-                    resultsContainer.innerHTML = '<p class="text-center text-sm text-slate-400 py-4">검색 결과가 없습니다.</p>';
-                }
-            })
-            .catch(() => {
-                if (resultsContainer) {
-                    resultsContainer.innerHTML = '<p class="text-center text-sm text-red-400 py-4">학교 정보를 가져오는 중 오류가 발생했습니다.</p>';
-                }
-            });
-    }
+        try:
+            res = requests.get(url, params=params, timeout=5)
+            data = res.json()
 
-    function selectSchool(schoolInfo) {
-        safeStorage.setItem('fixedSchool', JSON.stringify(schoolInfo));
-        initApp();
-    }
+            if 'hisTimetable' in data:
+                rows = data['hisTimetable'][1]['row']
+                self.timetable_table.setRowCount(len(rows))
+                self.timetable_table.setColumnCount(3)
+                self.timetable_table.setHorizontalHeaderLabels(["교시", "과목", "일자"])
 
-    function initApp() {
-        const savedSchool = safeStorage.getItem('fixedSchool');
-        const setupView = document.getElementById('setup-view');
-        const mainView = document.getElementById('main-view');
+                for idx, row in enumerate(rows):
+                    self.timetable_table.setItem(idx, 0, QTableWidgetItem(str(row.get('PERIO', ''))))
+                    self.timetable_table.setItem(idx, 1, QTableWidgetItem(str(row.get('ITRT_CNTNT', ''))))
+                    self.timetable_table.setItem(idx, 2, QTableWidgetItem(str(row.get('ALL_TI_YMD', ''))))
+            else:
+                self.timetable_table.clear()
+                self.timetable_table.setRowCount(0)
+        except Exception as e:
+            print(f"시간표 로드 오류: {e}")
 
-        if (savedSchool) {
-            const schoolInfo = JSON.parse(savedSchool);
-            if (setupView) setupView.classList.add('hidden');
-            if (mainView) mainView.classList.remove('hidden');
-            
-            // 오늘 날짜 설정 (YYYYMMDD)
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            const dateStr = `${year}${month}${day}`;
-
-            // 데이터 일괄 로드
-            loadAllData(schoolInfo, dateStr);
-        } else {
-            if (setupView) setupView.classList.remove('hidden');
-            if (mainView) mainView.classList.add('hidden');
+    def load_meal(self):
+        url = "https://open.neis.go.kr/hub/mealServiceDietInfo"
+        params = {
+            'KEY': self.api_key,
+            'Type': 'json',
+            'ATPT_OFCDC_SC_CODE': self.atpt_ofcdc_sc_code,
+            'SD_SCHUL_CODE': self.sd_sched_dep_code,
+            'pIndex': 1,
+            'pSize': 5
         }
-    }
 
-    function loadAllData(schoolInfo, dateStr) {
-        loadSchedule(schoolInfo, dateStr);
-        loadMeal(schoolInfo, dateStr);
-        loadTimetable(schoolInfo, dateStr);
-    }
+        try:
+            res = requests.get(url, params=params, timeout=5)
+            data = res.json()
 
-    // --- 1. 학사 일정 API ---
-    function loadSchedule(schoolInfo, dateStr) {
-        const scheduleCard = document.getElementById('schedule-card');
-        const scheduleBox = document.getElementById('schedule-content-box');
+            if 'mealServiceDietInfo' in data:
+                rows = data['mealServiceDietInfo'][1]['row']
+                self.meal_table.setRowCount(len(rows))
+                self.meal_table.setColumnCount(2)
+                self.meal_table.setHorizontalHeaderLabels(["날짜", "메뉴"])
 
-        fetch(`${API_BASE_URL}/SchoolSchedule?Type=json&ATPT_OFCDC_SC_CODE=${schoolInfo.officeCode}&SD_SCHUL_CODE=${schoolInfo.schoolCode}&AA_YMD=${dateStr}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.SchoolSchedule && data.SchoolSchedule[1] && data.SchoolSchedule[1].row) {
-                    const events = data.SchoolSchedule[1].row;
-                    if (scheduleBox) {
-                        scheduleBox.innerHTML = '';
-                        events.forEach(event => {
-                            scheduleBox.innerHTML += `
-                                <div class="flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                    <span class="font-semibold text-slate-800 text-[15px]">${event.EVENT_NM}</span>
-                                </div>
-                            `;
-                        });
-                    }
-                    if (scheduleCard) scheduleCard.classList.remove('hidden');
-                } else {
-                    if (scheduleCard) scheduleCard.classList.add('hidden');
-                }
-            })
-            .catch(() => {
-                if (scheduleCard) scheduleCard.classList.add('hidden');
-            });
-    }
+                for idx, row in enumerate(rows):
+                    # 식단 메뉴 내 HTML 태그 및 공백 정제
+                    dish = row.get('DDISH_NM', '').replace('<br/>', '\n')
+                    self.meal_table.setItem(idx, 0, QTableWidgetItem(str(row.get('MLSV_YMD', ''))))
+                    self.meal_table.setItem(idx, 1, QTableWidgetItem(dish))
+            else:
+                self.meal_table.clear()
+                self.meal_table.setRowCount(0)
+        except Exception as e:
+            print(f"급식 로드 오류: {e}")
 
-    // --- 2. 급식 API ---
-    function loadMeal(schoolInfo, dateStr) {
-        const mealBox = document.getElementById('meal-content-box');
-        if (!mealBox) return; // 화면에 급식 상자가 없으면 안전하게 건너뜀
-
-        mealBox.innerHTML = '<p class="text-sm text-slate-400 py-2">급식 정보를 불러오는 중...</p>';
-
-        fetch(`${API_BASE_URL}/MealServiceDietInfo?Type=json&ATPT_OFCDC_SC_CODE=${schoolInfo.officeCode}&SD_SCHUL_CODE=${schoolInfo.schoolCode}&MLSV_YMD=${dateStr}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.MealServiceDietInfo && data.MealServiceDietInfo[1] && data.MealServiceDietInfo[1].row) {
-                    const mealData = data.MealServiceDietInfo[1].row[0];
-                    const cleanMenu = (mealData.DDISH_NM || '')
-                        .replace(/\([0-9\.]+\)/g, '')
-                        .split('<br/>')
-                        .map(item => item.trim())
-                        .filter(item => item.length > 0)
-                        .join('<br>');
-
-                    mealBox.innerHTML = `
-                        <div class="text-slate-700 text-[15px] leading-relaxed font-medium">
-                            ${cleanMenu || '등록된 메뉴가 없습니다.'}
-                        </div>
-                        <div class="text-xs text-slate-400 mt-2">
-                            🔥 칼로리: ${mealData.CAL_INFO || '정보 없음'}
-                        </div>
-                    `;
-                } else {
-                    mealBox.innerHTML = '<p class="text-sm text-slate-400 py-2">🍱 등록된 급식 식단이 없습니다.</p>';
-                }
-            })
-            .catch(() => {
-                mealBox.innerHTML = '<p class="text-sm text-slate-400 py-2">⚠️ 급식 정보를 불러오지 못했습니다.</p>';
-            });
-    }
-
-    // --- 3. 시간표 API ---
-    function loadTimetable(schoolInfo, dateStr) {
-        const unifiedRowsContainer = document.getElementById('unified-rows');
-        if (!unifiedRowsContainer) return;
-
-        let endpoint = 'hisTimetable';
-        if (schoolInfo.kind === '중학교') endpoint = 'misTimetable';
-        else if (schoolInfo.kind === '초등학교') endpoint = 'elsTimetable';
-
-        fetch(`${API_BASE_URL}/${endpoint}?Type=json&ATPT_OFCDC_SC_CODE=${schoolInfo.officeCode}&SD_SCHUL_CODE=${schoolInfo.schoolCode}&ALL_TI_YMD=${dateStr}`)
-            .then(res => res.json())
-            .then(data => {
-                const matrix = { 1: {}, 2: {}, 3: {} };
-                let hasAnyData = false;
-
-                // 데이터가 존재하는지 3중 검사로 에러 방지
-                if (data && data[endpoint] && data[endpoint][1] && data[endpoint][1].row) {
-                    const rows = data[endpoint][1].row;
-                    rows.forEach(rowItem => {
-                        const grade = parseInt(rowItem.GRADE);
-                        const period = parseInt(rowItem.PERIO);
-                        const subjectName = rowItem.ITRT_CNTNT || "";
-
-                        if (grade >= 1 && grade <= 3 && period >= 1 && period <= 7) {
-                            if (subjectName) {
-                                matrix[grade][period] = subjectName.trim();
-                            }
-                        }
-                    });
-                }
-
-                const savedMapping = JSON.parse(safeStorage.getItem('teacherMapping') || '{}');
-                unifiedRowsContainer.innerHTML = '';
-
-                for (let p = 1; p <= 7; p++) {
-                    const g1 = matrix[1][p];
-                    const g2 = matrix[2][p];
-                    const g3 = matrix[3][p];
-
-                    if (g1 || g2 || g3) {
-                        hasAnyData = true;
-
-                        const renderCell = (subject) => {
-                            if (!subject) return '<td class="py-3 px-1 text-center text-slate-300 text-[15px] font-normal">-</td>';
-                            const teacher = savedMapping[subject];
-                            const displayTeacher = teacher ? `<span class="text-xs text-blue-600 font-normal ml-0.5">(${teacher})</span>` : '';
-                            return `
-                                <td class="py-3 px-1 text-center cursor-pointer hover:bg-blue-50/50 transition-colors" onclick="showTeacherTooltip('${subject}')">
-                                    <span class="font-medium text-slate-700 text-[16px]">${subject}</span>${displayTeacher}
-                                </td>
-                            `;
-                        };
-
-                        const rowHtml = `
-                            <tr class="hover:bg-slate-50/80 transition-colors">
-                                <td class="py-3 text-center text-xs font-bold text-slate-400 bg-slate-50/50">${p}교시</td>
-                                ${renderCell(g1)}
-                                ${renderCell(g2)}
-                                ${renderCell(g3)}
-                            </tr>
-                        `;
-                        unifiedRowsContainer.innerHTML += rowHtml;
-                    }
-                }
-
-                if (!hasAnyData) {
-                    unifiedRowsContainer.innerHTML = `
-                        <tr>
-                            <td colspan="4" class="text-center py-8 text-sm text-slate-400 font-medium">
-                                📅 조회된 시간표가 없습니다. (휴업일/주말이거나 아직 등록 전입니다)
-                            </td>
-                        </tr>
-                    `;
-                }
-            })
-            .catch(() => {
-                unifiedRowsContainer.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-center py-8 text-sm text-red-400 font-medium">
-                            ⚠️ 시간표 데이터를 불러오는 중 오류가 발생했습니다.
-                        </td>
-                    </tr>
-                `;
-            });
-    }
-
-    function resetSchool() {
-        safeStorage.removeItem('fixedSchool');
-        const mainView = document.getElementById('main-view');
-        const setupView = document.getElementById('setup-view');
-        const searchInput = document.getElementById('search-input');
-        const searchResults = document.getElementById('search-results');
-
-        if (mainView) mainView.classList.add('hidden');
-        if (setupView) setupView.classList.remove('hidden');
-        if (searchInput) searchInput.value = '';
-        if (searchResults) searchResults.innerHTML = '';
-    }
-
-    // 페이지 로드 시 앱 초기화
-    document.addEventListener('DOMContentLoaded', initApp);
-</script>
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = OnSchoolApp()
+    ex.show()
+    sys.exit(app.exec_())
